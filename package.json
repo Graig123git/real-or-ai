@@ -1,0 +1,31 @@
+{
+  "name": "real-or-ai",
+  "version": "1.0.0",
+  "description": "A mobile app where users swipe to guess Real vs AI across images, video, audio, and text",
+  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "app",
+    "infra",
+    "tools/*"
+  ],
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai",
+    "mobile",
+    "game",
+    "react-native",
+    "expo"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "lerna": "^9.0.0"
+  }
+}
