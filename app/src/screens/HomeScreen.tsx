@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import theme from '../theme';
+import DailyChallengePopup from '../components/DailyChallengePopup';
 
 const CategoryCard = ({ title, color }: { title: string; color: string }) => (
   <TouchableOpacity style={[styles.categoryCard, { backgroundColor: color }]}>
@@ -19,37 +20,56 @@ const DailyChallenge = () => (
 );
 
 const HomeScreen = () => {
+  const [showDailyChallenge, setShowDailyChallenge] = useState(false);
+  
+  useEffect(() => {
+    // Show the daily challenge popup after a delay
+    const timer = setTimeout(() => {
+      setShowDailyChallenge(true);
+    }, 2000); // 2 seconds delay
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.title}>Home</Text>
-      
-      <DailyChallenge />
-      
-      <Text style={styles.sectionTitle}>Categories</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-        <CategoryCard title="Images" color={theme.colors.neonPurple[700]} />
-        <CategoryCard title="Videos" color={theme.colors.neonPurple[600]} />
-        <CategoryCard title="Audio" color={theme.colors.neonPurple[500]} />
-        <CategoryCard title="Text" color={theme.colors.neonPurple[400]} />
-        <CategoryCard title="Mixed" color={theme.colors.neonGreen[600]} />
+    <>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.title}>Home</Text>
+        
+        <DailyChallenge />
+        
+        <Text style={styles.sectionTitle}>Categories</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
+          <CategoryCard title="Images" color={theme.colors.neonPurple[700]} />
+          <CategoryCard title="Videos" color={theme.colors.neonPurple[600]} />
+          <CategoryCard title="Audio" color={theme.colors.neonPurple[500]} />
+          <CategoryCard title="Text" color={theme.colors.neonPurple[400]} />
+          <CategoryCard title="Mixed" color={theme.colors.neonGreen[600]} />
+        </ScrollView>
+        
+        <Text style={styles.sectionTitle}>Recent Activity</Text>
+        <View style={styles.activityContainer}>
+          <View style={styles.activityItem}>
+            <Text style={styles.activityTitle}>Images Round</Text>
+            <Text style={styles.activitySubtitle}>8/10 Correct • +120 XP</Text>
+          </View>
+          <View style={styles.activityItem}>
+            <Text style={styles.activityTitle}>Videos Round</Text>
+            <Text style={styles.activitySubtitle}>6/10 Correct • +90 XP</Text>
+          </View>
+          <View style={styles.activityItem}>
+            <Text style={styles.activityTitle}>Daily Challenge</Text>
+            <Text style={styles.activitySubtitle}>7/10 Correct • +150 XP</Text>
+          </View>
+        </View>
       </ScrollView>
       
-      <Text style={styles.sectionTitle}>Recent Activity</Text>
-      <View style={styles.activityContainer}>
-        <View style={styles.activityItem}>
-          <Text style={styles.activityTitle}>Images Round</Text>
-          <Text style={styles.activitySubtitle}>8/10 Correct • +120 XP</Text>
-        </View>
-        <View style={styles.activityItem}>
-          <Text style={styles.activityTitle}>Videos Round</Text>
-          <Text style={styles.activitySubtitle}>6/10 Correct • +90 XP</Text>
-        </View>
-        <View style={styles.activityItem}>
-          <Text style={styles.activityTitle}>Daily Challenge</Text>
-          <Text style={styles.activitySubtitle}>7/10 Correct • +150 XP</Text>
-        </View>
-      </View>
-    </ScrollView>
+      {/* Daily Challenge Popup */}
+      <DailyChallengePopup 
+        visible={showDailyChallenge} 
+        onClose={() => setShowDailyChallenge(false)} 
+      />
+    </>
   );
 };
 
