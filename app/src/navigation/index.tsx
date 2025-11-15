@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import theme from '../theme';
@@ -7,10 +7,18 @@ import ShuffleIcon from '../components/ShuffleIcon';
 import VideoIcon from '../components/VideoIcon';
 import ImageIcon from '../components/ImageIcon';
 import AudioIcon from '../components/AudioIcon';
+import HouseIcon from '../components/HouseIcon';
+import TrophyIcon from '../components/TrophyIcon';
+import AwardIcon from '../components/AwardIcon';
+import StoreIcon from '../components/StoreIcon';
+import UserIcon from '../components/UserIcon';
+import FlipCard from '../components/FlipCard';
+import CategoryDetailScreen from '../components/CategoryDetailScreen';
+import GameplayScreen from '../screens/GameplayScreen';
 
 // Define screen props type
 type ScreenProps = {
-  onNavigate: (screen: string) => void;
+  onNavigate: (screen: string, params?: any) => void;
 };
 
 // Screen names for navigation
@@ -19,6 +27,7 @@ const SCREENS = {
   LOGIN: 'Login',
   REGISTER: 'Register',
   HOME: 'Home',
+  GAMEPLAY: 'Gameplay',
 };
 
 // Simple screen components
@@ -333,6 +342,20 @@ const RegisterScreen = ({ onNavigate }: ScreenProps) => {
 
 const HomeScreen = ({ onNavigate }: ScreenProps) => {
   const [showDailyChallenge, setShowDailyChallenge] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showDetailScreen, setShowDetailScreen] = useState(false);
+  
+  // Create refs for FlipCard components
+  const flipCardRefs = useRef<{[key: string]: React.RefObject<any>}>({
+    images: React.createRef(),
+    videos: React.createRef(),
+    audio: React.createRef(),
+    text: React.createRef(),
+    mixed: React.createRef()
+  }).current;
+  
+  // State to force reset of cards
+  const [resetKey, setResetKey] = useState(0);
   
   useEffect(() => {
     // Show the daily challenge popup after a delay
@@ -343,6 +366,47 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
     
     return () => clearTimeout(timer);
   }, []);
+  
+  // Handle starting a round
+  const handleStartRound = () => {
+    // Navigate to the gameplay screen with the selected category
+    if (selectedCategory) {
+      const contentType = selectedCategory === 'mixed' ? 'image' : selectedCategory as 'image' | 'text' | 'audio' | 'video';
+      const categoryTitle = selectedCategory === 'mixed' ? 'Mixed Mode' : categories.find(cat => cat.id === selectedCategory)?.detailTitle || 'General';
+      
+      console.log(`Starting round for category: ${selectedCategory}`);
+      onNavigate(SCREENS.GAMEPLAY, {
+        category: categoryTitle,
+        contentType: contentType
+      });
+    }
+    
+    // Reset selected category to go back to the grid view
+    setSelectedCategory(null);
+    setShowDetailScreen(false);
+  };
+  
+  // Handle category selection
+  const handleCategorySelect = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    
+    // Show detail screen after a short delay to allow for animation
+    setTimeout(() => {
+      setShowDetailScreen(true);
+    }, 300);
+  };
+  
+  // Handle back from detail screen
+  const handleBackFromDetail = () => {
+    // First hide the detail screen
+    setShowDetailScreen(false);
+    
+    // Reset the selected category immediately to prevent stale state
+    setSelectedCategory(null);
+    
+    // Force a reset of all cards by incrementing the resetKey
+    setResetKey(prev => prev + 1);
+  };
   
   // Use the ImageIcon component
   const renderImageIcon = () => (
@@ -380,27 +444,52 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
       id: 'images', 
       title: 'Images', 
       renderIcon: renderImageIcon,
-      color: '#9d4eff' // Vibrant purple
+      color: '#9d4eff', // Vibrant purple
+      detailTitle: 'Space Exploration' // Example topic for this category
     },
     { 
       id: 'videos', 
       title: 'Videos', 
       renderIcon: renderVideoIcon,
-      color: '#20ff8a' // Vibrant green
+      color: '#20ff8a', // Vibrant green
+      detailTitle: 'Wildlife Documentary'
     },
     { 
       id: 'audio', 
       title: 'Audio', 
       renderIcon: renderAudioIcon,
-      color: '#9d4eff' // Vibrant purple
+      color: '#9d4eff', // Vibrant purple
+      detailTitle: 'Music Composition'
     },
     { 
       id: 'text', 
       title: 'Text', 
       renderIcon: renderTextIcon,
-      color: '#20ff8a' // Vibrant green
+      color: '#20ff8a', // Vibrant green
+      detailTitle: 'News Article'
     }
   ];
+
+  // Find the selected category
+  const selectedCategoryData = categories.find(cat => cat.id === selectedCategory);
+
+  // Render the detail screen if a category is selected
+  if (showDetailScreen && selectedCategoryData) {
+    return (
+      <View style={styles.homeContainer}>
+        <CategoryDetailScreen 
+          category={{
+            id: selectedCategoryData.id,
+            title: selectedCategoryData.detailTitle,
+            color: selectedCategoryData.color,
+            contentType: selectedCategoryData.id as 'image' | 'text' | 'audio' | 'video'
+          }}
+          onBack={handleBackFromDetail}
+          onStartRound={handleStartRound}
+        />
+      </View>
+    );
+  }
 
   return (
     <>
@@ -422,13 +511,36 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
             {categories.map((category) => (
               <TouchableOpacity 
                 key={category.id}
-                style={styles.categoryCard}
-                onPress={() => {/* Handle category selection */}}
+                style={styles.categoryCardContainer}
+                onPress={() => handleCategorySelect(category.id)}
+                activeOpacity={0.7}
               >
-                <View style={[styles.iconContainer, { borderColor: category.color, borderWidth: 1.5, borderRadius: 12 }]}>
-                  {category.renderIcon()}
-                </View>
-                <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
+                {/* Use the FlipCard component with the correct props */}
+                <FlipCard
+                  ref={flipCardRefs[category.id]}
+                  resetKey={resetKey}
+                  frontContent={
+                    <View style={styles.categoryCard}>
+                      <View style={[styles.iconContainer, { borderColor: category.color, borderWidth: 1.5, borderRadius: 12 }]}>
+                        {category.renderIcon()}
+                      </View>
+                      <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
+                    </View>
+                  }
+                  backContent={
+                    <View style={styles.categoryCard}>
+                      <View style={[styles.iconContainer, { borderColor: category.color, borderWidth: 1.5, borderRadius: 12 }]}>
+                        {category.renderIcon()}
+                      </View>
+                      <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
+                    </View>
+                  }
+                  onFlip={(isFront) => {
+                    if (!isFront && !showDetailScreen) {
+                      handleCategorySelect(category.id);
+                    }
+                  }}
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -436,7 +548,8 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
           {/* Mixed Mode button */}
           <TouchableOpacity 
             style={styles.mixedModeCard}
-            onPress={() => {/* Handle mixed mode */}}
+            onPress={() => handleCategorySelect('mixed')}
+            activeOpacity={0.7}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={styles.mixedModeIconContainer}>
@@ -452,9 +565,7 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
           {/* Home */}
           <TouchableOpacity style={styles.navItem}>
             <View style={styles.navIconContainer}>
-              <View style={{width: 18, height: 18, borderWidth: 1.5, borderColor: '#9d4eff', borderRadius: 2}}>
-                <View style={{width: 8, height: 8, borderLeftWidth: 1.5, borderLeftColor: '#9d4eff', borderBottomWidth: 1.5, borderBottomColor: '#9d4eff', position: 'absolute', top: 4, left: 4}} />
-              </View>
+              <HouseIcon width={20} height={20} color="#9d4eff" />
             </View>
             <Text style={[styles.navText, styles.activeNavText]}>Home</Text>
           </TouchableOpacity>
@@ -462,7 +573,7 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
           {/* Leaderboard */}
           <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to leaderboard */}}>
             <View style={styles.navIconContainer}>
-              <View style={{width: 18, height: 18, borderWidth: 1.5, borderColor: '#8E8E93', borderRadius: 9}} />
+              <TrophyIcon width={20} height={20} color="#8E8E93" />
             </View>
             <Text style={styles.navText}>Leaderboard</Text>
           </TouchableOpacity>
@@ -470,7 +581,7 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
           {/* Achievements */}
           <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to achievements */}}>
             <View style={styles.navIconContainer}>
-              <View style={{width: 18, height: 18, borderWidth: 1.5, borderColor: '#8E8E93', borderRadius: 2}} />
+              <AwardIcon width={20} height={20} color="#8E8E93" />
             </View>
             <Text style={styles.navText}>Achievement</Text>
           </TouchableOpacity>
@@ -478,7 +589,7 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
           {/* Store */}
           <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to store */}}>
             <View style={styles.navIconContainer}>
-              <View style={{width: 18, height: 14, borderWidth: 1.5, borderColor: '#8E8E93', borderRadius: 2}} />
+              <StoreIcon width={20} height={20} color="#8E8E93" />
             </View>
             <Text style={styles.navText}>Store</Text>
           </TouchableOpacity>
@@ -486,7 +597,7 @@ const HomeScreen = ({ onNavigate }: ScreenProps) => {
           {/* Profile */}
           <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to profile */}}>
             <View style={styles.navIconContainer}>
-              <View style={{width: 18, height: 18, borderWidth: 1.5, borderColor: '#8E8E93', borderRadius: 9}} />
+              <UserIcon width={20} height={20} color="#8E8E93" />
             </View>
             <Text style={styles.navText}>Profile</Text>
           </TouchableOpacity>
@@ -508,13 +619,18 @@ const Navigation = () => {
   const [fadeAnim] = useState(new Animated.Value(1));
   
   // Function to handle smooth navigation
-  const navigateWithFade = (screen: string) => {
+  const navigateWithFade = (screen: string, params?: any) => {
     // Fade out current screen
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
+      // Set gameplay params if navigating to gameplay screen
+      if (screen === SCREENS.GAMEPLAY && params) {
+        setGameplayParams(params);
+      }
+      
       // Change screen
       setCurrentScreen(screen);
       
@@ -527,6 +643,27 @@ const Navigation = () => {
     });
   };
 
+  // State for gameplay screen parameters
+  const [gameplayParams, setGameplayParams] = useState<{
+    contentType: 'image' | 'text' | 'audio' | 'video';
+    category: string;
+  } | null>(null);
+
+  // Wrapper for GameplayScreen to handle navigation
+  const GameplayScreenWrapper = () => {
+    if (!gameplayParams) {
+      // If no params, go back to home
+      navigateWithFade(SCREENS.HOME);
+      return null;
+    }
+    
+    return (
+      <GameplayScreen 
+        route={{ params: gameplayParams }}
+      />
+    );
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
       case SCREENS.SPLASH:
@@ -537,6 +674,8 @@ const Navigation = () => {
         return <RegisterScreen onNavigate={navigateWithFade} />;
       case SCREENS.HOME:
         return <HomeScreen onNavigate={navigateWithFade} />;
+      case SCREENS.GAMEPLAY:
+        return <GameplayScreenWrapper />;
       default:
         return <SplashScreen onNavigate={navigateWithFade} />;
     }
@@ -926,14 +1065,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 0,
   },
-  categoryCard: {
+  categoryCardContainer: {
     width: '49.8%',
-    aspectRatio: 0.4, // Even taller boxes to fill more space
+    aspectRatio: 0.65, // Adjusted to find a balance in height
+    marginBottom: 2,
+  },
+  categoryCard: {
+    width: '100%',
+    height: '100%',
     backgroundColor: '#1c1c1e',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 2,
     padding: 16,
   },
   iconContainer: {
@@ -1006,10 +1149,10 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   navIcon: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#8E8E93',
   },
   activeNavIcon: {
@@ -1021,7 +1164,8 @@ const styles = StyleSheet.create({
   },
   navText: {
     color: '#8E8E93',
-    fontSize: 12,
+    fontSize: 10,
+    textAlign: 'center',
   },
   topNav: {
     flexDirection: 'row',
