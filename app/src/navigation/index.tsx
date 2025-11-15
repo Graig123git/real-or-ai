@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { Audio } from 'expo-av';
 import theme from '../theme';
 import DailyChallengePopup from '../components/DailyChallengePopup';
 import ShuffleIcon from '../components/ShuffleIcon';
@@ -60,7 +61,7 @@ const SplashScreen = ({ onNavigate }: ScreenProps) => {
         // Auto-navigate to Login screen after typing is complete and a short delay
         setTimeout(() => {
           onNavigate(SCREENS.LOGIN);
-        }, 40000000000); // Wait 1.5 seconds after typing completes
+        }, 1500); // Wait 1.5 seconds after typing completes
       }
     }, 30); // Even faster typing
     
@@ -144,6 +145,11 @@ const SplashScreen = ({ onNavigate }: ScreenProps) => {
         <View style={styles.humanIcon}>
           {/* Head */}
           <View style={styles.humanHead} />
+          {/* Human eyes */}
+          <View style={styles.humanEyes}>
+            <View style={styles.humanEye} />
+            <View style={styles.humanEye} />
+          </View>
           {/* Body */}
           <View style={styles.humanBody} />
         </View>
@@ -186,25 +192,13 @@ const SplashScreen = ({ onNavigate }: ScreenProps) => {
       
       {/* Real or AI heading with animated words */}
       <View style={styles.titleContainer}>
-        <Text style={[styles.appTitleWord, {color: showHuman ? '#ffffff' : '#666666'}]}>Real</Text>
+        <Text style={[styles.appTitleWord, {color: showHuman ? '#20ff8a' : '#666666'}]}>Real</Text>
         <Text style={styles.appTitleSeparator}>or</Text>
-        <Text style={[styles.appTitleWord, {color: !showHuman ? '#ffffff' : '#666666'}]}>AI</Text>
+        <Text style={[styles.appTitleWord, {color: !showHuman ? '#8a20ff' : '#666666'}]}>AI</Text>
       </View>
       
       {/* Styled text with typing animation */}
       {renderStyledText()}
-      
-      {/* Start Game button */}
-      <TouchableOpacity 
-        style={styles.startGameButton}
-        onPress={() => {
-          console.log('Start Game pressed');
-          // Temporarily commented out for testing
-          // onNavigate(SCREENS.LOGIN);
-        }}
-      >
-        <Text style={styles.startGameButtonText}>Start Game</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -1061,11 +1055,13 @@ const styles = StyleSheet.create({
   aiIconContainer: {
     width: 80,
     height: 80,
-    backgroundColor: '#8a20ff',
+    backgroundColor: '#000000',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
+    borderWidth: 2,
+    borderColor: '#8a20ff',
   },
   // Human icon styles
   humanIcon: {
@@ -1079,17 +1075,34 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#000',
+    backgroundColor: '#333333',
     position: 'absolute',
     top: 0,
+    borderWidth: 1,
+    borderColor: '#20ff8a',
   },
   humanBody: {
     width: 16,
     height: 20,
-    backgroundColor: '#000',
+    backgroundColor: '#333333',
     position: 'absolute',
     bottom: 0,
     borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#20ff8a',
+  },
+  humanEyes: {
+    flexDirection: 'row',
+    position: 'absolute',
+    top: 8,
+    width: 14,
+    justifyContent: 'space-between',
+  },
+  humanEye: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#20ff8a',
   },
   // Robot icon styles
   robotIcon: {
@@ -1102,15 +1115,17 @@ const styles = StyleSheet.create({
   robotHead: {
     width: 24,
     height: 18,
-    backgroundColor: '#000',
+    backgroundColor: '#333333',
     position: 'absolute',
     top: 8,
     borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#8a20ff',
   },
   robotAntenna: {
     width: 2,
     height: 8,
-    backgroundColor: '#000',
+    backgroundColor: '#8a20ff',
     position: 'absolute',
     top: 0,
   },
@@ -1125,15 +1140,17 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#20ff8a',
+    backgroundColor: '#8a20ff',
   },
   robotBody: {
     width: 20,
     height: 14,
-    backgroundColor: '#000',
+    backgroundColor: '#333333',
     position: 'absolute',
     bottom: 0,
     borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#8a20ff',
   },
   // Title container styles
   titleContainer: {
