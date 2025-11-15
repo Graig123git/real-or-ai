@@ -11,7 +11,6 @@ import {
   StatusBar,
   Platform,
   SafeAreaView,
-  Modal
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -107,12 +106,12 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
   
   // State
   const [currentLevel, setCurrentLevel] = useState(initialLevel);
-  const [score, setScore] = useState(1175);
+  const [score, setScore] = useState(1200);
+  const [xp, setXp] = useState(750);
   const [streak, setStreak] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [showClue, setShowClue] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
   
   // Animation refs
   const cardScale = useRef(new Animated.Value(1)).current;
@@ -178,6 +177,9 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
     // Update score
     setScore(prev => prev + (correct ? 50 : -25));
     
+    // Update XP
+    setXp(prev => Math.min(1000, prev + (correct ? 100 : 50)));
+    
     // Update streak
     if (correct) {
       setStreak(prev => prev + 1);
@@ -237,34 +239,37 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
     outputRange: [-100, 0, 100]
   });
   
+  // Handle back button press
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
+  
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.profileSection}>
-          <Image 
-            source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
-            style={styles.profileAvatar} 
-          />
-          <View style={styles.profileInfo}>
-            <Text style={styles.helloText}>Hello CyberKnight!</Text>
-            <View style={styles.locationContainer}>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.profileSection}>
+            <Image 
+              source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
+              style={styles.profileAvatar} 
+            />
+            <View style={styles.profileInfo}>
+              <Text style={styles.helloText}>Hello CyberKnight!</Text>
               <Text style={styles.locationText}>Washington, USA</Text>
             </View>
           </View>
+          
+          <TouchableOpacity style={styles.searchButton}>
+            <Text style={styles.searchIcon}>🔍</Text>
+          </TouchableOpacity>
         </View>
         
-        <TouchableOpacity style={styles.searchButton}>
-          <Text style={styles.searchIcon}>🔍</Text>
-        </TouchableOpacity>
-      </View>
-      
-      {/* Main Content */}
-      <View style={styles.contentContainer}>
-        {/* Card */}
-        <View style={styles.cardContainer}>
+        {/* Main Content */}
+        <View style={styles.content}>
+          {/* Card */}
           <Animated.View 
             style={[
               styles.card,
@@ -283,58 +288,71 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
               style={styles.cardImage}
               imageStyle={styles.cardImageStyle}
             >
+              {/* Match percentage */}
+              <View style={styles.matchContainer}>
+                <Text style={styles.matchText}>Match {level.confidence}%</Text>
+              </View>
+              
+              {/* Image info */}
               <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.9)']}
                 style={styles.cardGradient}
               >
-                {/* Match percentage */}
-                <View style={styles.matchContainer}>
-                  <Text style={styles.matchText}>Match {level.confidence}%</Text>
-                </View>
-                
-                {/* Image info */}
                 <View style={styles.cardInfo}>
                   <Text style={styles.cardTitle}>{level.title}, {level.id}</Text>
                   <Text style={styles.cardLocation}>{level.location}</Text>
                 </View>
               </LinearGradient>
             </ImageBackground>
+            
+            {/* Pagination Dots */}
+            <View style={styles.paginationContainer}>
+              {Array(totalLevels).fill(0).map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[
+                    styles.paginationDot, 
+                    index === currentLevel && styles.activeDot
+                  ]} 
+                />
+              ))}
+            </View>
           </Animated.View>
-        </View>
-        
-        {/* Buttons Section */}
-        <View style={styles.buttonsSection}>
-          {/* Triangle buttons layout */}
+          
+          {/* Triangle Buttons Layout */}
           <View style={styles.triangleContainer}>
-            {/* Top button (Clue) */}
+            {/* Top button (Guess) */}
             <View style={styles.topButtonContainer}>
               <TouchableOpacity 
-                style={[styles.actionButton, styles.clueButton]}
+                style={[styles.circleButton, styles.guessButton]}
                 onPress={handleClue}
               >
-                <Text style={styles.actionButtonIcon}>💡</Text>
+                <Text style={styles.buttonIcon}>⚡</Text>
+                <Text style={styles.buttonLabel}>Guess</Text>
               </TouchableOpacity>
             </View>
             
-            {/* Bottom row (X and Heart) */}
+            {/* Bottom row (Clue and Help) */}
             <View style={styles.bottomButtonsRow}>
               <TouchableOpacity 
-                style={[styles.actionButton, styles.rejectButton]}
+                style={[styles.circleButton, styles.clueButton]}
                 onPress={handleAIChoice}
               >
-                <Text style={styles.actionButtonIcon}>✗</Text>
+                <Text style={styles.buttonIcon}>💡</Text>
+                <Text style={styles.buttonLabel}>Clue</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.actionButton, styles.likeButton]}
+                style={[styles.circleButton, styles.helpButton]}
                 onPress={handleRealChoice}
               >
-                <Text style={styles.actionButtonIcon}>♥</Text>
+                <Text style={styles.buttonIcon}>❓</Text>
+                <Text style={styles.buttonLabel}>Help</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
-      </View>
+      </SafeAreaView>
       
       {/* Clue overlay */}
       {showClue && (
@@ -360,35 +378,25 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
           )}
         </View>
       )}
-      
-      {/* Progress indicator */}
-      <View style={styles.progressContainer}>
-        {Array.from({ length: totalLevels }).map((_, index) => (
-          <View 
-            key={index} 
-            style={[
-              styles.progressDot,
-              index === currentLevel ? styles.progressDotActive : 
-              index < currentLevel ? styles.progressDotCompleted : {}
-            ]}
-          />
-        ))}
-      </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000000', // Pure black background
+    overflow: 'hidden',
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -401,7 +409,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#805AD5',
+    borderColor: '#8a2be2', // Purple border
   },
   profileInfo: {
     marginLeft: 12,
@@ -411,10 +419,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   locationText: {
     color: '#AAAAAA',
     fontSize: 12,
@@ -423,59 +427,60 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // More subtle
     justifyContent: 'center',
     alignItems: 'center',
   },
   searchIcon: {
     fontSize: 18,
   },
-  contentContainer: {
+  content: {
     flex: 1,
-    flexDirection: 'column',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-  },
-  cardContainer: {
-    height: '65%', // Reduced height to make room for buttons
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingBottom: 20,
   },
   card: {
-    width: width - 32,
-    height: '100%',
-    borderRadius: 24,
+    width: '100%',
+    height: '70%',
+    borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#333',
-    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 10,
   },
   cardImage: {
     width: '100%',
     height: '100%',
   },
   cardImageStyle: {
-    borderRadius: 24,
-  },
-  cardGradient: {
-    flex: 1,
-    justifyContent: 'space-between',
-    padding: 16,
+    borderRadius: 20,
   },
   matchContainer: {
-    alignSelf: 'flex-start',
+    position: 'absolute',
+    top: 16,
+    left: 16,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    zIndex: 1,
   },
   matchText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  cardGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '40%',
+    justifyContent: 'flex-end',
+    padding: 16,
   },
   cardInfo: {
     marginBottom: 8,
@@ -485,23 +490,48 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   cardLocation: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: 16,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
-  buttonsSection: {
-    height: '30%', // Dedicated space for buttons
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: '#8a2be2', // Purple
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  // Triangle layout
   triangleContainer: {
-    width: '100%',
+    height: '25%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   topButtonContainer: {
     alignItems: 'center',
-    marginBottom: 20, // Reduced space between top and bottom buttons
+    marginBottom: 20,
   },
   bottomButtonsRow: {
     flexDirection: 'row',
@@ -509,10 +539,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-  actionButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  circleButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -521,20 +551,30 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  rejectButton: {
-    backgroundColor: '#FF4D4D',
-    marginRight: 60, // Reduced spacing between bottom buttons
-  },
   clueButton: {
-    backgroundColor: '#805AD5',
+    backgroundColor: '#4dff88', // Green
+    marginRight: 60, // Space between bottom buttons
+    position: 'relative',
   },
-  likeButton: {
-    backgroundColor: '#4DFF88',
-    marginLeft: 60, // Reduced spacing between bottom buttons
+  guessButton: {
+    backgroundColor: '#8a2be2', // Purple
+    position: 'relative',
   },
-  actionButtonIcon: {
+  helpButton: {
+    backgroundColor: '#4dff88', // Green
+    marginLeft: 60, // Space between bottom buttons
+    position: 'relative',
+  },
+  buttonIcon: {
     fontSize: 24,
     color: 'white',
+    fontWeight: 'bold',
+  },
+  buttonLabel: {
+    position: 'absolute',
+    bottom: -20,
+    color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
   },
   overlayContainer: {
@@ -545,11 +585,18 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   clueContainer: {
-    backgroundColor: 'rgba(128, 90, 213, 0.9)',
+    backgroundColor: 'rgba(138, 43, 226, 0.9)', // Purple
     borderRadius: 16,
     padding: 20,
     width: '80%',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowColor: '#8a2be2',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 10,
   },
   clueTitle: {
     color: 'white',
@@ -573,10 +620,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   correctFeedback: {
-    backgroundColor: 'rgba(77, 255, 136, 0.8)',
+    backgroundColor: 'rgba(77, 255, 136, 0.8)', // Green
+    shadowColor: '#4dff88',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
   },
   incorrectFeedback: {
-    backgroundColor: 'rgba(255, 77, 77, 0.8)',
+    backgroundColor: 'rgba(255, 77, 77, 0.8)', // Red
+    shadowColor: '#ff4d4d',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
   },
   feedbackText: {
     color: 'white',
@@ -589,29 +644,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 4,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 8,
-    marginBottom: 12,
-  },
-  progressDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    marginHorizontal: 4,
-  },
-  progressDotActive: {
-    backgroundColor: '#805AD5',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  progressDotCompleted: {
-    backgroundColor: '#4DFF88',
   },
 });
 
