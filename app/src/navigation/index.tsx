@@ -34,6 +34,8 @@ const SCREENS = {
 const SplashScreen = ({ onNavigate }: ScreenProps) => {
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const [showHuman, setShowHuman] = useState(true);
+  const iconAnimation = useRef(new Animated.Value(0)).current;
   const fullText = 'Can you spot the fake?';
   
   useEffect(() => {
@@ -58,20 +60,151 @@ const SplashScreen = ({ onNavigate }: ScreenProps) => {
         // Auto-navigate to Login screen after typing is complete and a short delay
         setTimeout(() => {
           onNavigate(SCREENS.LOGIN);
-        }, 1500); // Wait 1.5 seconds after typing completes
+        }, 40000000000); // Wait 1.5 seconds after typing completes
       }
     }, 30); // Even faster typing
     
     return () => clearInterval(typingInterval);
   }, [onNavigate]);
+  
+  // Icon animation effect
+  useEffect(() => {
+    // Create a repeating animation that toggles between human and robot
+    const startAnimation = () => {
+      Animated.sequence([
+        // Fade out current icon
+        Animated.timing(iconAnimation, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true
+        }),
+        // Switch icons and reset animation value
+        Animated.timing(iconAnimation, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true
+        })
+      ]).start(() => {
+        // Toggle which icon is shown
+        setShowHuman(prev => !prev);
+        // Restart animation
+        setTimeout(startAnimation, 1000);
+      });
+    };
+    
+    startAnimation();
+    
+    return () => {
+      // Clean up animation when component unmounts
+      iconAnimation.stopAnimation();
+    };
+  }, [iconAnimation]);
+
+  // Function to style the text with different colors
+  const renderStyledText = () => {
+    if (!displayText) return null;
+    
+    // Find the positions of "spot" and "fake" in the text
+    const spotIndex = fullText.indexOf('spot');
+    const fakeIndex = fullText.indexOf('fake');
+    
+    // Check if we've typed far enough to show these words
+    const hasSpot = displayText.length > spotIndex + 4;
+    const hasFake = displayText.length > fakeIndex + 4;
+    
+    // Create the styled text parts
+    return (
+      <Text style={styles.splashSubtitle}>
+        {displayText.slice(0, spotIndex)}
+        {hasSpot ? (
+          <Text style={styles.greenText}>
+            {displayText.slice(spotIndex, spotIndex + 4)}
+          </Text>
+        ) : (
+          displayText.slice(spotIndex)
+        )}
+        {hasSpot ? displayText.slice(spotIndex + 4, fakeIndex) : ''}
+        {hasFake ? (
+          <Text style={styles.purpleText}>
+            {displayText.slice(fakeIndex, fakeIndex + 4)}
+          </Text>
+        ) : (
+          hasSpot ? displayText.slice(fakeIndex) : ''
+        )}
+        {hasFake ? displayText.slice(fakeIndex + 4) : ''}
+        {showCursor && <Text style={styles.cursor}>|</Text>}
+      </Text>
+    );
+  };
+
+  // Render human or robot icon based on state
+  const renderIcon = () => {
+    if (showHuman) {
+      return (
+        <View style={styles.humanIcon}>
+          {/* Head */}
+          <View style={styles.humanHead} />
+          {/* Body */}
+          <View style={styles.humanBody} />
+        </View>
+      );
+    } else {
+      return (
+        <View style={styles.robotIcon}>
+          {/* Robot head */}
+          <View style={styles.robotHead} />
+          {/* Robot antenna */}
+          <View style={styles.robotAntenna} />
+          {/* Robot eyes */}
+          <View style={styles.robotEyes}>
+            <View style={styles.robotEye} />
+            <View style={styles.robotEye} />
+          </View>
+          {/* Robot body */}
+          <View style={styles.robotBody} />
+        </View>
+      );
+    }
+  };
 
   return (
     <View style={styles.splashContainer}>
-      <Text style={styles.splashTitle}>Real or AI?</Text>
-      <Text style={styles.splashSubtitle}>
-        {displayText}
-        {showCursor && <Text style={styles.cursor}>|</Text>}
-      </Text>
+      {/* Animated icon container */}
+      <Animated.View 
+        style={[
+          styles.aiIconContainer,
+          {
+            opacity: iconAnimation.interpolate({
+              inputRange: [0, 0.5, 1],
+              outputRange: [1, 0, 1]
+            })
+          }
+        ]}
+      >
+        {renderIcon()}
+      </Animated.View>
+      
+      {/* Real or AI heading with animated words */}
+      <View style={styles.titleContainer}>
+        <Text style={[styles.appTitleWord, {color: showHuman ? '#ffffff' : '#666666'}]}>Real</Text>
+        <Text style={styles.appTitleSeparator}>or</Text>
+        <Text style={[styles.appTitleWord, {color: !showHuman ? '#ffffff' : '#666666'}]}>AI</Text>
+      </View>
+      
+      {/* Styled text with typing animation */}
+      {renderStyledText()}
+      
+      {/* Start Game button */}
+      <TouchableOpacity 
+        style={styles.startGameButton}
+        onPress={() => {
+          console.log('Start Game pressed');
+          // Temporarily commented out for testing
+          // onNavigate(SCREENS.LOGIN);
+        }}
+      >
+        <Text style={styles.startGameButtonText}>Start Game</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -881,11 +1014,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
+  appTitle: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 20,
+    textAlign: 'center',
+    fontFamily: 'Courier',
+  },
   splashSubtitle: {
     fontSize: 20,
     color: 'white',
     marginBottom: 60,
     textAlign: 'center',
+    fontFamily: 'Courier', // More pixelated, arcade-style font
+    letterSpacing: 1, // Slight letter spacing for arcade-style look
+    fontWeight: 'bold',
+    padding: 10,
+    backgroundColor: '#000000', // Black background
+    borderRadius: 5, // Slight rounding of corners
   },
   splashButton: {
     backgroundColor: '#8a20ff',
@@ -898,6 +1045,131 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  // New styles for the gamified splash screen
+  greenText: {
+    color: '#20ff8a', // Bright green color
+    fontWeight: 'bold',
+    fontFamily: 'Courier', // Match the parent text font
+  },
+  purpleText: {
+    color: '#8a20ff', // Vibrant purple color
+    fontWeight: 'bold',
+    fontFamily: 'Courier', // Match the parent text font
+  },
+  // Icon and title styles
+  aiIconContainer: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#8a20ff',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  // Human icon styles
+  humanIcon: {
+    width: 40,
+    height: 40,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  humanHead: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#000',
+    position: 'absolute',
+    top: 0,
+  },
+  humanBody: {
+    width: 16,
+    height: 20,
+    backgroundColor: '#000',
+    position: 'absolute',
+    bottom: 0,
+    borderRadius: 5,
+  },
+  // Robot icon styles
+  robotIcon: {
+    width: 40,
+    height: 40,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  robotHead: {
+    width: 24,
+    height: 18,
+    backgroundColor: '#000',
+    position: 'absolute',
+    top: 8,
+    borderRadius: 4,
+  },
+  robotAntenna: {
+    width: 2,
+    height: 8,
+    backgroundColor: '#000',
+    position: 'absolute',
+    top: 0,
+  },
+  robotEyes: {
+    flexDirection: 'row',
+    position: 'absolute',
+    top: 12,
+    width: 20,
+    justifyContent: 'space-between',
+  },
+  robotEye: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#20ff8a',
+  },
+  robotBody: {
+    width: 20,
+    height: 14,
+    backgroundColor: '#000',
+    position: 'absolute',
+    bottom: 0,
+    borderRadius: 3,
+  },
+  // Title container styles
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  appTitleWord: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    fontFamily: 'Courier',
+    marginHorizontal: 8,
+  },
+  appTitleSeparator: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    fontFamily: 'Courier',
+  },
+  startGameButton: {
+    backgroundColor: '#8a20ff',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 30,
+    marginTop: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  startGameButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'System',
+    letterSpacing: 2, // Increased letter spacing for more "gamified" look
+    textTransform: 'uppercase', // Uppercase for more "gamified" look
   },
   
   // Login screen styles
@@ -914,8 +1186,8 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: 'white',
-    fontSize: 16, // Reduced from 18
-    fontWeight: '600', // Lighter than bold for smoother appearance
+    fontSize: 20, // Reduced from 18
+
   },
   loginContent: {
     flex: 1,
@@ -936,7 +1208,8 @@ const styles = StyleSheet.create({
   },
   cursor: {
     color: 'white',
-    fontWeight: '600', // Match title
+    fontWeight: 'bold',
+    fontFamily: 'Courier', // Match the parent text font
   },
   welcomeSubtitle: {
     fontSize: 14, // Reduced from 16
