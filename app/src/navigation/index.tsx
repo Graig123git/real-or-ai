@@ -16,6 +16,7 @@ import UserIcon from '../components/UserIcon';
 import FlipCard from '../components/FlipCard';
 import CategoryDetailScreen from '../components/CategoryDetailScreen';
 import GameplayScreen from '../screens/GameplayScreen';
+import ResultsScreen from '../screens/ResultsScreen';
 
 // Define screen props type
 type ScreenProps = {
@@ -29,6 +30,7 @@ const SCREENS = {
   REGISTER: 'Register',
   HOME: 'Home',
   GAMEPLAY: 'Gameplay',
+  RESULTS: 'Results',
 };
 
 // Simple screen components
@@ -753,9 +755,11 @@ const Navigation = () => {
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      // Set gameplay params if navigating to gameplay screen
+      // Set params based on the screen
       if (screen === SCREENS.GAMEPLAY && params) {
         setGameplayParams(params);
+      } else if (screen === SCREENS.RESULTS && params) {
+        setResultsParams(params);
       }
       
       // Change screen
@@ -776,6 +780,16 @@ const Navigation = () => {
     category: string;
   } | null>(null);
 
+  // State for results screen parameters
+  const [resultsParams, setResultsParams] = useState<{
+    score: number;
+    totalQuestions: number;
+    xpEarned: number;
+    longestStreak: number;
+    streakBonus?: number;
+    message?: string;
+  } | null>(null);
+
   // Wrapper for GameplayScreen to handle navigation
   const GameplayScreenWrapper = () => {
     if (!gameplayParams) {
@@ -787,6 +801,29 @@ const Navigation = () => {
     return (
       <GameplayScreen 
         route={{ params: gameplayParams }}
+        navigation={{
+          navigate: navigateWithFade,
+          goBack: () => navigateWithFade(SCREENS.HOME)
+        }}
+      />
+    );
+  };
+  
+  // Wrapper for ResultsScreen to handle navigation
+  const ResultsScreenWrapper = () => {
+    if (!resultsParams) {
+      // If no params, go back to home
+      navigateWithFade(SCREENS.HOME);
+      return null;
+    }
+    
+    return (
+      <ResultsScreen 
+        route={{ params: resultsParams }}
+        navigation={{
+          navigate: navigateWithFade,
+          goBack: () => navigateWithFade(SCREENS.HOME)
+        }}
       />
     );
   };
@@ -803,6 +840,8 @@ const Navigation = () => {
         return <HomeScreen onNavigate={navigateWithFade} />;
       case SCREENS.GAMEPLAY:
         return <GameplayScreenWrapper />;
+      case SCREENS.RESULTS:
+        return <ResultsScreenWrapper />;
       default:
         return <SplashScreen onNavigate={navigateWithFade} />;
     }

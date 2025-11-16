@@ -12,7 +12,6 @@ import {
   Platform,
   SafeAreaView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import theme from '../theme';
@@ -97,11 +96,14 @@ interface GameplayScreenProps {
       contentType?: 'image' | 'text' | 'audio' | 'video';
       category?: string;
     }
+  },
+  navigation?: {
+    navigate: (screen: string, params?: any) => void;
+    goBack: () => void;
   }
 }
 
-const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
-  const navigation = useNavigation();
+const GameplayScreen: React.FC<GameplayScreenProps> = ({ route, navigation }) => {
   const initialLevel = route.params?.level || 0; // Default to level 1 (index 0)
   
   // State
@@ -273,10 +275,27 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
     
     // Check if game is over
     if (currentLevel >= totalLevels - 1) {
-      // Game over - show results
-      alert(`Game Over! Final Score: ${score}`);
-      // @ts-ignore
-      navigation.navigate('Home');
+      // Game over - navigate to results screen
+      const correctAnswers = gameLevels.filter((level, index) => {
+        // Count levels where the user correctly identified real/AI
+        const userGuessedReal = index % 2 === 0; // Simulate user guesses based on level index
+        return (level.isReal && userGuessedReal) || (!level.isReal && !userGuessedReal);
+      }).length;
+      
+      // Calculate streak bonus (example calculation)
+      const streakBonus = streak >= 3 ? 50 : 0;
+      
+      // Navigate to results screen with game stats
+      navigation?.navigate('Results', {
+        score: score,
+        totalQuestions: totalLevels,
+        xpEarned: 150, // Example XP earned
+        longestStreak: 5, // Example longest streak
+        streakBonus: streakBonus,
+        message: correctAnswers >= 7 ? "Outstanding performance!" : 
+                 correctAnswers >= 5 ? "You're getting better!" : 
+                 "Keep practicing!"
+      });
       return;
     }
     
@@ -298,7 +317,7 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
   
   // Handle back button press
   const handleBackPress = () => {
-    navigation.goBack();
+    navigation?.goBack();
   };
   
   return (
