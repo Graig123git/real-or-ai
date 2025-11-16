@@ -835,6 +835,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: 'white',
     fontSize: 24,
+    fontFamily: 'Courier',
   },
   headerSpacer: {
     width: 40, // Same width as back button for centering
@@ -852,10 +853,14 @@ const styles = StyleSheet.create({
     fontWeight: '600', // Lighter than bold for smoother appearance
     color: 'white',
     marginBottom: 8,
+    fontFamily: 'Courier',
+    textAlign: 'center',
   },
   registerSubtitle: {
     fontSize: 14, // Reduced from 16
     color: '#8E8E93',
+    fontFamily: 'Courier',
+    textAlign: 'center',
   },
   formContainer: {
     marginBottom: 30,
@@ -866,6 +871,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
     fontWeight: '500', // Medium weight for better readability
+    fontFamily: 'Courier',
   },
   registerInputWrapper: {
     flexDirection: 'row',
@@ -879,12 +885,14 @@ const styles = StyleSheet.create({
   registerInputIcon: {
     marginRight: 12,
     fontSize: 18, // Match login screen
+    fontFamily: 'Courier',
   },
   registerInput: {
     flex: 1,
     height: 45, // Match login screen
     color: 'white',
     fontSize: 14, // Reduced from 16 to match login input
+    fontFamily: 'Courier',
   },
   termsContainer: {
     flexDirection: 'row',
@@ -915,15 +923,18 @@ const styles = StyleSheet.create({
   checkboxCheck: {
     color: 'white',
     fontSize: 12, // Reduced from 16
+    fontFamily: 'Courier',
   },
   termsText: {
     color: '#8E8E93',
     fontSize: 14,
     flex: 1,
+    fontFamily: 'Courier',
   },
   termsLink: {
     color: '#8a20ff',
     fontWeight: 'bold',
+    fontFamily: 'Courier',
   },
   signUpButton: {
     width: '100%',
@@ -953,10 +964,12 @@ const styles = StyleSheet.create({
     fontSize: 14, // Reduced from 18
     fontWeight: '600', // Lighter than bold for smoother appearance
     marginRight: 8,
+    fontFamily: 'Courier',
   },
   signUpButtonIcon: {
     color: 'white',
     fontSize: 14, // Reduced from 18
+    fontFamily: 'Courier',
   },
   // Common styles
   container: {
@@ -1204,7 +1217,7 @@ const styles = StyleSheet.create({
   headerText: {
     color: 'white',
     fontSize: 20, // Reduced from 18
-
+    fontFamily: 'Courier',
   },
   loginContent: {
     flex: 1,
@@ -1222,6 +1235,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
     lineHeight: 36, // Adjusted for smaller font
+    fontFamily: 'Courier',
   },
   cursor: {
     color: 'white',
@@ -1232,6 +1246,7 @@ const styles = StyleSheet.create({
     fontSize: 14, // Reduced from 16
     color: '#8E8E93',
     textAlign: 'center',
+    fontFamily: 'Courier',
   },
   inputContainer: {
     width: '100%',
@@ -1255,6 +1270,7 @@ const styles = StyleSheet.create({
     height: 45,
     color: 'white',
     fontSize: 14, // Reduced from 16
+    fontFamily: 'Courier',
   },
   emailButton: {
     width: '100%',
@@ -1281,6 +1297,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14, // Reduced from 16
     fontWeight: '600', // Lighter than bold for smoother appearance
+    fontFamily: 'Courier',
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -1297,6 +1314,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     paddingHorizontal: 16,
     fontSize: 14,
+    fontFamily: 'Courier',
   },
   socialButtonsContainer: {
     width: '100%',
@@ -1324,6 +1342,7 @@ const styles = StyleSheet.create({
     fontSize: 14, // Reduced from 16
     marginLeft: 8,
     fontWeight: '500', // Medium weight for better readability
+    fontFamily: 'Courier',
   },
   signUpContainer: {
     alignItems: 'center',
@@ -1332,10 +1351,12 @@ const styles = StyleSheet.create({
   signUpText: {
     color: '#8E8E93',
     fontSize: 14,
+    fontFamily: 'Courier',
   },
   signUpLink: {
     color: '#8a20ff',
     fontWeight: 'bold',
+    fontFamily: 'Courier',
   },
   
   // Home screen styles
