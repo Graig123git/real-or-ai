@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: theme.typography.fontFamily.courier,
   },
   button: {
     backgroundColor: theme.colors.neonPurple[500],
@@ -89,6 +90,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: theme.typography.fontFamily.courier,
   },
 });
 

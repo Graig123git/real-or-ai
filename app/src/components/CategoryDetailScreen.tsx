@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '400',
     letterSpacing: 2,
-    fontFamily: 'monospace',
+    fontFamily: 'Courier',
   },
   headerSpacer: {
     width: 32,
@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 2,
-    fontFamily: 'monospace',
+    fontFamily: 'Courier',
     lineHeight: 40,
   },
   instructionText: {
     color: '#4caf50',
     fontSize: 16,
     textAlign: 'center',
-    fontFamily: 'monospace',
+    fontFamily: 'Courier',
     letterSpacing: 1,
     fontWeight: '400',
     marginBottom: 40,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
-    fontFamily: 'monospace',
+    fontFamily: 'Courier',
   },
 });
 

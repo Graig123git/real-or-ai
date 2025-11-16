@@ -117,6 +117,9 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
   const cardScale = useRef(new Animated.Value(1)).current;
   const cardOpacity = useRef(new Animated.Value(1)).current;
   const cardRotate = useRef(new Animated.Value(0)).current;
+  const feedbackScale = useRef(new Animated.Value(0)).current;
+  const iconRotate = useRef(new Animated.Value(0)).current;
+  const iconScale = useRef(new Animated.Value(0)).current;
   
   // Get current level
   const level = gameLevels[currentLevel];
@@ -174,11 +177,14 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
   
   // Process answer
   const processAnswer = (correct: boolean) => {
+    // Calculate XP change
+    const xpChange = correct ? 25 : -10;
+    
     // Update score
     setScore(prev => prev + (correct ? 50 : -25));
     
     // Update XP
-    setXp(prev => Math.min(1000, prev + (correct ? 100 : 50)));
+    setXp(prev => Math.min(1000, prev + xpChange));
     
     // Update streak
     if (correct) {
@@ -191,10 +197,61 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
     setIsCorrect(correct);
     setShowFeedback(true);
     
-    // Hide feedback after delay
-    setTimeout(() => {
+    // Reset animations
+    iconScale.setValue(0);
+    iconRotate.setValue(0);
+    
+    // Show feedback with a hard timeout
+    const feedbackTimeout = setTimeout(() => {
+      // Force hide feedback after 800ms total, regardless of animation state
       setShowFeedback(false);
-    }, 1500);
+      feedbackScale.setValue(0);
+      iconScale.setValue(0);
+      iconRotate.setValue(0);
+    }, 800); // Hard maximum time - increased from 500ms
+    
+    // Animate feedback - even slower animations
+    Animated.parallel([
+      // Scale up container
+      Animated.timing(feedbackScale, {
+        toValue: 1,
+        duration: 200, // Increased from 150ms
+        useNativeDriver: true
+      }),
+      
+      // Animate icon immediately
+      correct ? 
+        // Checkmark animation
+        Animated.timing(iconScale, {
+          toValue: 1,
+          duration: 200, // Increased from 150ms
+          useNativeDriver: true
+        }) 
+        : 
+        // X mark animation
+        Animated.timing(iconScale, {
+          toValue: 1,
+          duration: 200, // Increased from 150ms
+          useNativeDriver: true
+        })
+    ]).start(() => {
+      // Longer delay before fade out
+      setTimeout(() => {
+        // Start fade out
+        Animated.timing(feedbackScale, {
+          toValue: 0,
+          duration: 200, // Increased from 150ms
+          useNativeDriver: true
+        }).start(() => {
+          // Clean up
+          clearTimeout(feedbackTimeout);
+          setShowFeedback(false);
+          feedbackScale.setValue(0);
+          iconScale.setValue(0);
+          iconRotate.setValue(0);
+        });
+      }, 300); // Longer delay before starting fade out - increased from 100ms
+    });
   };
   
   // Show clue
@@ -366,16 +423,61 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route }) => {
       
       {/* Feedback overlay */}
       {showFeedback && (
-        <View style={[
-          styles.feedbackContainer,
-          isCorrect ? styles.correctFeedback : styles.incorrectFeedback
-        ]}>
-          <Text style={styles.feedbackText}>
-            {isCorrect ? 'CORRECT!' : 'WRONG!'}
-          </Text>
-          {isCorrect && streak > 1 && (
-            <Text style={styles.streakText}>{streak}x Streak!</Text>
-          )}
+        <View style={styles.feedbackOverlay}>
+          <Animated.View 
+            style={[
+              styles.feedbackContainer,
+              isCorrect ? styles.correctFeedback : styles.incorrectFeedback,
+              {
+                transform: [{ scale: feedbackScale }]
+              }
+            ]}
+          >
+            <View style={styles.feedbackIconContainer}>
+              {isCorrect ? (
+                <Animated.View 
+                  style={[
+                    styles.feedbackIcon, 
+                    styles.correctIcon,
+                    {
+                      transform: [
+                        { scale: iconScale }
+                      ]
+                    }
+                  ]}
+                >
+                  <Text style={styles.iconText}>✓</Text>
+                </Animated.View>
+              ) : (
+                <Animated.View 
+                  style={[
+                    styles.feedbackIcon, 
+                    styles.incorrectIcon,
+                    {
+                      transform: [
+                        { scale: iconScale },
+                        { rotate: iconRotate.interpolate({
+                          inputRange: [-0.15, 0, 0.15],
+                          outputRange: ['-15deg', '0deg', '15deg']
+                        })}
+                      ]
+                    }
+                  ]}
+                >
+                  <Text style={styles.iconText}>✕</Text>
+                </Animated.View>
+              )}
+            </View>
+            <Text style={styles.feedbackText}>
+              {isCorrect ? 'Correct!' : 'Wrong!'}
+            </Text>
+            <Text style={styles.xpText}>
+              {isCorrect ? 'XP Gained' : 'XP Lost'}
+            </Text>
+            <Text style={[styles.xpAmount, isCorrect ? styles.xpGained : styles.xpLost]}>
+              {isCorrect ? '+25' : '-10'}
+            </Text>
+          </Animated.View>
         </View>
       )}
     </View>
@@ -418,10 +520,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: theme.typography.fontFamily.courier,
   },
   locationText: {
     color: '#AAAAAA',
     fontSize: 12,
+    fontFamily: theme.typography.fontFamily.courier,
   },
   searchButton: {
     width: 40,
@@ -433,6 +537,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     fontSize: 18,
+    fontFamily: theme.typography.fontFamily.courier,
   },
   content: {
     flex: 1,
@@ -472,6 +577,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
+    fontFamily: theme.typography.fontFamily.courier,
   },
   cardGradient: {
     position: 'absolute',
@@ -493,6 +599,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
+    fontFamily: theme.typography.fontFamily.courier,
   },
   cardLocation: {
     color: 'rgba(255, 255, 255, 0.9)',
@@ -500,6 +607,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
+    fontFamily: theme.typography.fontFamily.courier,
   },
   paginationContainer: {
     position: 'absolute',
@@ -569,6 +677,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'white',
     fontWeight: 'bold',
+    fontFamily: theme.typography.fontFamily.courier,
   },
   buttonLabel: {
     position: 'absolute',
@@ -576,10 +685,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+    fontFamily: theme.typography.fontFamily.courier,
   },
   overlayContainer: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  feedbackOverlay: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
@@ -603,47 +719,100 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    fontFamily: theme.typography.fontFamily.courier,
   },
   clueText: {
     color: 'white',
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
+    fontFamily: theme.typography.fontFamily.courier,
   },
   feedbackContainer: {
     position: 'absolute',
-    top: 100,
-    alignSelf: 'center',
+    top: '50%',
+    left: '50%',
+    marginTop: -125,
+    marginLeft: -125,
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingVertical: 20,
+    borderRadius: 16,
+    backgroundColor: '#2A2A2A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 250,
+    height: 250,
   },
   correctFeedback: {
-    backgroundColor: 'rgba(77, 255, 136, 0.8)', // Green
-    shadowColor: '#4dff88',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
+    backgroundColor: '#2A2A2A',
+    borderWidth: 2,
+    borderColor: '#9d4eff',
   },
   incorrectFeedback: {
-    backgroundColor: 'rgba(255, 77, 77, 0.8)', // Red
-    shadowColor: '#ff4d4d',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
+    backgroundColor: '#2A2A2A',
+    borderWidth: 2,
+    borderColor: '#ff4d4d',
+  },
+  feedbackIconContainer: {
+    marginBottom: 15,
+  },
+  feedbackIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  correctIcon: {
+    backgroundColor: '#9d4eff', // Purple
+    borderWidth: 2,
+    borderColor: '#b580ff',
+  },
+  incorrectIcon: {
+    backgroundColor: '#ff4d4d', // Red
+    borderWidth: 2,
+    borderColor: '#ff8080',
+  },
+  iconText: {
+    color: 'white',
+    fontSize: 32,
+    fontWeight: 'bold',
+    fontFamily: theme.typography.fontFamily.courier,
   },
   feedbackText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 10,
+    fontFamily: theme.typography.fontFamily.courier,
+  },
+  xpText: {
+    color: '#AAAAAA',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 5,
+    fontFamily: theme.typography.fontFamily.courier,
+  },
+  xpAmount: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontFamily: theme.typography.fontFamily.courier,
+  },
+  xpGained: {
+    color: '#20ff8a', // Green
+  },
+  xpLost: {
+    color: '#ff4d4d', // Red
   },
   streakText: {
     color: 'white',
     fontSize: 14,
     textAlign: 'center',
     marginTop: 4,
+    fontFamily: theme.typography.fontFamily.courier,
   },
 });
 

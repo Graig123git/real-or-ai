@@ -1406,6 +1406,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+    fontFamily: 'Courier',
   },
   mixedModeCard: {
     width: '100%',
@@ -1439,6 +1440,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8a20ff',
     textAlign: 'center',
+    fontFamily: 'Courier',
   },
   bottomNav: {
     flexDirection: 'row',
@@ -1477,6 +1479,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontSize: 10,
     textAlign: 'center',
+    fontFamily: 'Courier',
   },
   topNav: {
     flexDirection: 'row',
@@ -1494,7 +1497,8 @@ const styles = StyleSheet.create({
   },
   topNavIcon: {
     color: 'white',
-    fontSize: 24
+    fontSize: 24,
+    fontFamily: 'Courier',
   },
   activeNavIndicator: {
     position: 'absolute',

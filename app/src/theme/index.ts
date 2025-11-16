@@ -45,6 +45,7 @@ export const typography = {
   fontFamily: {
     sans: 'System',
     mono: 'Menlo',
+    courier: 'Courier',
   },
   fontSize: {
     xs: 12,
