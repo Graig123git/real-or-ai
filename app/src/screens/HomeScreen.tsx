@@ -1,68 +1,287 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import theme from '../theme';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation';
 import DailyChallengePopup from '../components/DailyChallengePopup';
+import ShuffleIcon from '../components/ShuffleIcon';
+import VideoIcon from '../components/VideoIcon';
+import ImageIcon from '../components/ImageIcon';
+import AudioIcon from '../components/AudioIcon';
+import HouseIcon from '../components/HouseIcon';
+import TrophyIcon from '../components/TrophyIcon';
+import AwardIcon from '../components/AwardIcon';
+import StoreIcon from '../components/StoreIcon';
+import UserIcon from '../components/UserIcon';
+import FlipCard from '../components/FlipCard';
+import CategoryDetailScreen from '../components/CategoryDetailScreen';
 
-const CategoryCard = ({ title, color }: { title: string; color: string }) => (
-  <TouchableOpacity style={[styles.categoryCard, { backgroundColor: color }]}>
-    <Text style={styles.categoryTitle}>{title}</Text>
-  </TouchableOpacity>
-);
-
-const DailyChallenge = () => (
-  <TouchableOpacity style={styles.dailyChallenge}>
-    <Text style={styles.dailyChallengeTitle}>Daily Challenge</Text>
-    <Text style={styles.dailyChallengeSubtitle}>5/10 Correct</Text>
-    <View style={styles.dailyChallengeButton}>
-      <Text style={styles.dailyChallengeButtonText}>Start Round</Text>
-    </View>
-  </TouchableOpacity>
-);
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Main'>;
 
 const HomeScreen = () => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const [showDailyChallenge, setShowDailyChallenge] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showDetailScreen, setShowDetailScreen] = useState(false);
+  
+  // Create refs for FlipCard components
+  const flipCardRefs = useRef<{[key: string]: React.RefObject<any>}>({
+    images: React.createRef(),
+    videos: React.createRef(),
+    audio: React.createRef(),
+    text: React.createRef(),
+    mixed: React.createRef()
+  }).current;
+  
+  // State to force reset of cards
+  const [resetKey, setResetKey] = useState(0);
   
   useEffect(() => {
     // Show the daily challenge popup after a delay
+    // Use a slightly longer delay for a better user experience
     const timer = setTimeout(() => {
       setShowDailyChallenge(true);
-    }, 2000); // 2 seconds delay
+    }, 2500); // 2.5 seconds delay
     
     return () => clearTimeout(timer);
   }, []);
+  
+  // Handle starting a round
+  const handleStartRound = () => {
+    // Navigate to the gameplay screen with the selected category
+    if (selectedCategory) {
+      const contentType = selectedCategory === 'mixed' ? 'image' : selectedCategory as 'image' | 'text' | 'audio' | 'video';
+      const categoryTitle = selectedCategory === 'mixed' ? 'Mixed Mode' : categories.find(cat => cat.id === selectedCategory)?.detailTitle || 'General';
+      
+      console.log(`Starting round for category: ${selectedCategory}`);
+      navigation.navigate('Gameplay', {
+        category: categoryTitle,
+        contentType: contentType
+      });
+    }
+    
+    // Reset selected category to go back to the grid view
+    setSelectedCategory(null);
+    setShowDetailScreen(false);
+  };
+  
+  // Handle category selection
+  const handleCategorySelect = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    
+    // Show detail screen after a short delay to allow for animation
+    setTimeout(() => {
+      setShowDetailScreen(true);
+    }, 300);
+  };
+  
+  // Handle back from detail screen
+  const handleBackFromDetail = () => {
+    // First hide the detail screen
+    setShowDetailScreen(false);
+    
+    // Reset the selected category immediately to prevent stale state
+    setSelectedCategory(null);
+    
+    // Force a reset of all cards by incrementing the resetKey
+    setResetKey(prev => prev + 1);
+  };
+  
+  // Use the ImageIcon component
+  const renderImageIcon = () => (
+    <ImageIcon width={32} height={32} color="#9d4eff" />
+  );
+  
+  // Use the VideoIcon component
+  const renderVideoIcon = () => (
+    <VideoIcon width={32} height={32} color="#20ff8a" />
+  );
+  
+  // Use the AudioIcon component
+  const renderAudioIcon = () => (
+    <AudioIcon width={32} height={32} color="#9d4eff" />
+  );
+  
+  const renderTextIcon = () => (
+    <View style={{width: 32, height: 32, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{width: 22, height: 26, borderWidth: 1.5, borderColor: '#20ff8a', borderRadius: 3}}>
+        <View style={{width: 12, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 8, left: 5}} />
+        <View style={{width: 12, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 13, left: 5}} />
+        <View style={{width: 8, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 14, left: 4}} />
+      </View>
+    </View>
+  );
+  
+  // Use the ShuffleIcon component for Mixed Mode
+  const renderMixedModeIcon = () => (
+    <ShuffleIcon width={24} height={24} color="#9d4eff" />
+  );
+  
+  // Define category data with custom icons
+  const categories = [
+    { 
+      id: 'images', 
+      title: 'Images', 
+      renderIcon: renderImageIcon,
+      color: '#9d4eff', // Vibrant purple
+      detailTitle: 'Space Exploration' // Example topic for this category
+    },
+    { 
+      id: 'videos', 
+      title: 'Videos', 
+      renderIcon: renderVideoIcon,
+      color: '#20ff8a', // Vibrant green
+      detailTitle: 'Wildlife Documentary'
+    },
+    { 
+      id: 'audio', 
+      title: 'Audio', 
+      renderIcon: renderAudioIcon,
+      color: '#9d4eff', // Vibrant purple
+      detailTitle: 'Music Composition'
+    },
+    { 
+      id: 'text', 
+      title: 'Text', 
+      renderIcon: renderTextIcon,
+      color: '#20ff8a', // Vibrant green
+      detailTitle: 'News Article'
+    }
+  ];
+
+  // Find the selected category
+  const selectedCategoryData = categories.find(cat => cat.id === selectedCategory);
+
+  // Render the detail screen if a category is selected
+  if (showDetailScreen && selectedCategoryData) {
+    return (
+      <View style={styles.homeContainer}>
+        <CategoryDetailScreen 
+          category={{
+            id: selectedCategoryData.id,
+            title: selectedCategoryData.detailTitle,
+            color: selectedCategoryData.color,
+            contentType: selectedCategoryData.id as 'image' | 'text' | 'audio' | 'video'
+          }}
+          onBack={handleBackFromDetail}
+          onStartRound={handleStartRound}
+        />
+      </View>
+    );
+  }
 
   return (
     <>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.title}>Home</Text>
-        
-        <DailyChallenge />
-        
-        <Text style={styles.sectionTitle}>Categories</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-          <CategoryCard title="Images" color={theme.colors.neonPurple[700]} />
-          <CategoryCard title="Videos" color={theme.colors.neonPurple[600]} />
-          <CategoryCard title="Audio" color={theme.colors.neonPurple[500]} />
-          <CategoryCard title="Text" color={theme.colors.neonPurple[400]} />
-          <CategoryCard title="Mixed" color={theme.colors.neonGreen[600]} />
-        </ScrollView>
-        
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
-        <View style={styles.activityContainer}>
-          <View style={styles.activityItem}>
-            <Text style={styles.activityTitle}>Images Round</Text>
-            <Text style={styles.activitySubtitle}>8/10 Correct • +120 XP</Text>
-          </View>
-          <View style={styles.activityItem}>
-            <Text style={styles.activityTitle}>Videos Round</Text>
-            <Text style={styles.activitySubtitle}>6/10 Correct • +90 XP</Text>
-          </View>
-          <View style={styles.activityItem}>
-            <Text style={styles.activityTitle}>Daily Challenge</Text>
-            <Text style={styles.activitySubtitle}>7/10 Correct • +150 XP</Text>
-          </View>
+      <View style={styles.homeContainer}>
+        {/* Top navigation */}
+        <View style={styles.topNav}>
+          <TouchableOpacity style={styles.topNavButton}>
+            <Text style={styles.topNavIcon}>◇</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.topNavButton}>
+            <Text style={styles.topNavIcon}>ⓘ</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+        
+        {/* Main content */}
+        <View style={styles.homeContent}>
+          {/* Grid of categories */}
+          <View style={styles.categoryGrid}>
+            {categories.map((category) => (
+              <TouchableOpacity 
+                key={category.id}
+                style={styles.categoryCardContainer}
+                onPress={() => handleCategorySelect(category.id)}
+                activeOpacity={0.7}
+              >
+                {/* Use the FlipCard component with the correct props */}
+                <FlipCard
+                  ref={flipCardRefs[category.id]}
+                  resetKey={resetKey}
+                  frontContent={
+                    <View style={styles.categoryCard}>
+                      <View style={[styles.iconContainer, { borderColor: category.color, borderWidth: 1.5, borderRadius: 12 }]}>
+                        {category.renderIcon()}
+                      </View>
+                      <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
+                    </View>
+                  }
+                  backContent={
+                    <View style={styles.categoryCard}>
+                      <View style={[styles.iconContainer, { borderColor: category.color, borderWidth: 1.5, borderRadius: 12 }]}>
+                        {category.renderIcon()}
+                      </View>
+                      <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
+                    </View>
+                  }
+                  onFlip={(isFront) => {
+                    if (!isFront && !showDetailScreen) {
+                      handleCategorySelect(category.id);
+                    }
+                  }}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+          
+          {/* Mixed Mode button */}
+          <TouchableOpacity 
+            style={styles.mixedModeCard}
+            onPress={() => handleCategorySelect('mixed')}
+            activeOpacity={0.7}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={styles.mixedModeIconContainer}>
+                {renderMixedModeIcon()}
+              </View>
+              <Text style={styles.mixedModeTitle}>Mixed Mode</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Bottom navigation bar */}
+        <View style={styles.bottomNav}>
+          {/* Home */}
+          <TouchableOpacity style={styles.navItem}>
+            <View style={styles.navIconContainer}>
+              <HouseIcon width={20} height={20} color="#9d4eff" />
+            </View>
+            <Text style={[styles.navText, styles.activeNavText]}>Home</Text>
+          </TouchableOpacity>
+          
+          {/* Leaderboard */}
+          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to leaderboard */}}>
+            <View style={styles.navIconContainer}>
+              <TrophyIcon width={20} height={20} color="#8E8E93" />
+            </View>
+            <Text style={styles.navText}>Leaderboard</Text>
+          </TouchableOpacity>
+          
+          {/* Achievements */}
+          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to achievements */}}>
+            <View style={styles.navIconContainer}>
+              <AwardIcon width={20} height={20} color="#8E8E93" />
+            </View>
+            <Text style={styles.navText}>Achievement</Text>
+          </TouchableOpacity>
+          
+          {/* Store */}
+          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to store */}}>
+            <View style={styles.navIconContainer}>
+              <StoreIcon width={20} height={20} color="#8E8E93" />
+            </View>
+            <Text style={styles.navText}>Store</Text>
+          </TouchableOpacity>
+          
+          {/* Profile */}
+          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to profile */}}>
+            <View style={styles.navIconContainer}>
+              <UserIcon width={20} height={20} color="#8E8E93" />
+            </View>
+            <Text style={styles.navText}>Profile</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       
       {/* Daily Challenge Popup */}
       <DailyChallengePopup 
@@ -74,94 +293,131 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  // Home screen styles
+  homeContainer: {
     flex: 1,
-    backgroundColor: theme.colors.dark[600],
+    backgroundColor: '#121212',
   },
-  contentContainer: {
-    padding: theme.spacing[6],
+  homeContent: {
+    flex: 1,
+    padding: 4,
+    paddingTop: 8,
+    position: 'relative', // Add position relative to parent
   },
-  title: {
-    fontSize: theme.typography.fontSize['3xl'],
-    fontWeight: 'bold',
-    color: theme.colors.neonPurple[500],
-    marginBottom: theme.spacing[6],
-  },
-  sectionTitle: {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: 'bold',
-    color: 'white',
-    marginTop: theme.spacing[6],
-    marginBottom: theme.spacing[4],
-  },
-  dailyChallenge: {
-    backgroundColor: theme.colors.dark[500],
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing[6],
-    marginBottom: theme.spacing[4],
-    borderWidth: 1,
-    borderColor: theme.colors.neonPurple[600],
-    ...theme.shadows.neonPurple,
-  },
-  dailyChallengeTitle: {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: 'bold',
-    color: theme.colors.neonPurple[500],
-    marginBottom: theme.spacing[2],
-  },
-  dailyChallengeSubtitle: {
-    fontSize: theme.typography.fontSize.base,
-    color: 'white',
-    marginBottom: theme.spacing[4],
-  },
-  dailyChallengeButton: {
-    backgroundColor: theme.colors.neonPurple[600],
-    borderRadius: theme.borderRadius.md,
-    paddingVertical: theme.spacing[3],
-    alignItems: 'center',
-  },
-  dailyChallengeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  categoriesContainer: {
+  categoryGrid: {
     flexDirection: 'row',
-    marginBottom: theme.spacing[4],
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 0,
+  },
+  categoryCardContainer: {
+    width: '49.8%',
+    aspectRatio: 0.65, // Adjusted to find a balance in height
+    marginBottom: 2,
   },
   categoryCard: {
-    width: 120,
-    height: 80,
-    borderRadius: theme.borderRadius.md,
-    marginRight: theme.spacing[4],
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#1c1c1e',
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    ...theme.shadows.neonPurple,
+    padding: 16,
+  },
+  iconContainer: {
+    width: 55,
+    height: 55,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderRadius: 12,
   },
   categoryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    fontFamily: 'Courier',
+  },
+  mixedModeCard: {
+    width: '100%',
+    aspectRatio: 3.5,
+    backgroundColor: '#1c1c1e',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 12,
+    position: 'absolute',
+    bottom: 10, // Position at bottom of screen
+    left: 4,
+    right: 4,
+  },
+  mixedModeIconContainer: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#9d4eff',
+  },
+  mixedModeTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8a20ff',
+    textAlign: 'center',
+    fontFamily: 'Courier',
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    height: 60,
+    backgroundColor: '#1c1c1e',
+    borderTopWidth: 1,
+    borderTopColor: '#2c2c2e',
+    paddingBottom: 4,
+  },
+  navItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 8,
+    position: 'relative',
+  },
+  navIconContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  activeNavText: {
+    color: '#9d4eff',
+    fontWeight: '600',
+  },
+  navText: {
+    color: '#8E8E93',
+    fontSize: 10,
+    textAlign: 'center',
+    fontFamily: 'Courier',
+  },
+  topNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    height: 60,
+  },
+  topNavButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  topNavIcon: {
     color: 'white',
-    fontWeight: 'bold',
-    fontSize: theme.typography.fontSize.lg,
-  },
-  activityContainer: {
-    marginBottom: theme.spacing[6],
-  },
-  activityItem: {
-    backgroundColor: theme.colors.dark[500],
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing[4],
-    marginBottom: theme.spacing[3],
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.neonPurple[500],
-  },
-  activityTitle: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: theme.spacing[1],
-  },
-  activitySubtitle: {
-    fontSize: theme.typography.fontSize.base,
-    color: '#a0a0a0',
+    fontSize: 24,
+    fontFamily: 'Courier',
   },
 });
 

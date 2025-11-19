@@ -1,250 +1,313 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation';
 import theme from '../theme';
 
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+
 const LoginScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<LoginScreenNavigationProp>();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayText, setDisplayText] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
+  const [typingComplete, setTypingComplete] = useState(false);
+  const fullText = 'Welcome,\nChallenger!';
+  
+  useEffect(() => {
+    // Cursor blinking effect
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 500);
+    
+    return () => clearInterval(cursorInterval);
+  }, []);
+  
+  useEffect(() => {
+    // Start typing animation
+    let i = 0;
+    const typingInterval = setInterval(() => {
+      if (i <= fullText.length) {
+        setDisplayText(fullText.slice(0, i));
+        i++;
+      } else {
+        clearInterval(typingInterval);
+        setTypingComplete(true);
+      }
+    }, 50); // Faster typing speed
+    
+    return () => clearInterval(typingInterval);
+  }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.loginContainer}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Sign Up/Login</Text>
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
-      >
-        <View style={styles.contentContainer}>
-          {/* Welcome Text */}
-          <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeTitle}>Welcome,{'\n'}Challenger!</Text>
-            <Text style={styles.welcomeSubtitle}>Prove your discernment.</Text>
+      <View style={styles.loginContent}>
+        {/* Welcome Text */}
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.welcomeTitle}>
+            {displayText}
+            {showCursor && <Text style={styles.cursor}>|</Text>}
+          </Text>
+          <Text style={styles.welcomeSubtitle}>Prove your discernment.</Text>
+        </View>
+
+        {/* Email and Password Inputs */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputWrapper}>
+            <Text style={styles.inputIcon}>✉️</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              placeholderTextColor="#8E8E93"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
           </View>
-
-          {/* Email Input */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputIcon}>✉️</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                placeholderTextColor="#8E8E93"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-          </View>
-
-          {/* Continue with Email Button */}
-          <TouchableOpacity 
-            style={[styles.emailButtonContainer, styles.emailButton]}
-            onPress={() => navigation.navigate('Home' as never)}
-          >
-            <Text style={styles.emailButtonText}>Continue with Email</Text>
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          {/* Social Login Buttons */}
-          <View style={styles.socialButtonsContainer}>
-            {/* Google Button */}
-            <TouchableOpacity 
-              style={styles.socialButton}
-              onPress={() => navigation.navigate('Home' as never)}
-            >
-              <View style={styles.socialIconContainer}>
-                <Text>G</Text>
-              </View>
-              <Text style={styles.socialButtonText}>Continue with Google</Text>
-            </TouchableOpacity>
-
-            {/* Apple Button */}
-            <TouchableOpacity 
-              style={styles.socialButton}
-              onPress={() => navigation.navigate('Home' as never)}
-            >
-              <View style={styles.socialIconContainer}>
-                <Text>🍎</Text>
-              </View>
-              <Text style={styles.socialButtonText}>Continue with Apple</Text>
-            </TouchableOpacity>
-
-            {/* Guest Button */}
-            <TouchableOpacity 
-              style={styles.socialButton}
-              onPress={() => navigation.navigate('Home' as never)}
-            >
-              <View style={styles.socialIconContainer}>
-                <Text>👤</Text>
-              </View>
-              <Text style={styles.socialButtonText}>Continue as Guest</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Sign Up Link */}
-          <View style={styles.signUpContainer}>
-            <Text style={styles.signUpText}>
-              Don't have an account? <Text style={styles.signUpLink}>Sign Up</Text>
-            </Text>
+          
+          <View style={styles.inputWrapper}>
+            <Text style={styles.inputIcon}>🔒</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              placeholderTextColor="#8E8E93"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+        {/* Login Button */}
+        <TouchableOpacity 
+          style={[
+            styles.emailButton, 
+            (!email.trim() || !password.trim()) && styles.loginButtonDisabled
+          ]}
+          onPress={() => navigation.navigate('Main')}
+          disabled={!email.trim() || !password.trim()}
+        >
+          <Text style={styles.emailButtonText}>Login</Text>
+        </TouchableOpacity>
+
+        {/* Divider */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Social Login Buttons */}
+        <View style={styles.socialButtonsContainer}>
+          {/* Google Button */}
+          <TouchableOpacity 
+            style={styles.socialButton}
+            onPress={() => navigation.navigate('Main')}
+          >
+            <View style={styles.socialIconContainer}>
+              <Text>G</Text>
+            </View>
+            <Text style={styles.socialButtonText}>Continue with Google</Text>
+          </TouchableOpacity>
+
+          {/* Apple Button */}
+          <TouchableOpacity 
+            style={styles.socialButton}
+            onPress={() => navigation.navigate('Main')}
+          >
+            <View style={styles.socialIconContainer}>
+              <Text>🍎</Text>
+            </View>
+            <Text style={styles.socialButtonText}>Continue with Apple</Text>
+          </TouchableOpacity>
+
+          {/* Guest Button */}
+          <TouchableOpacity 
+            style={styles.socialButton}
+            onPress={() => navigation.navigate('Main')}
+          >
+            <View style={styles.socialIconContainer}>
+              <Text>👤</Text>
+            </View>
+            <Text style={styles.socialButtonText}>Continue as Guest</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Sign Up Link */}
+        <View style={styles.signUpContainer}>
+          <Text style={styles.signUpText}>
+            Don't have an account? <Text style={styles.signUpLink} onPress={() => navigation.navigate('Register')}>Sign Up</Text>
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  // Login screen styles
+  loginContainer: {
     flex: 1,
-    backgroundColor: theme.colors.dark[600],
+    backgroundColor: '#121212', // Darker background
   },
   header: {
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.dark[400],
+    borderBottomColor: '#1c1c1e',
   },
   headerText: {
     color: 'white',
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: 'bold',
+    fontSize: 20, // Reduced from 18
+    fontFamily: 'Courier',
   },
-  keyboardAvoidingView: {
+  loginContent: {
     flex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-    padding: theme.spacing[6],
-    paddingTop: theme.spacing[10],
+    padding: 24,
+    paddingTop: 60, // Increased from 40 for more space at the top
   },
   welcomeContainer: {
     width: '100%',
-    marginBottom: theme.spacing[8],
+    marginBottom: 50, // Increased from 32 for more space below welcome text
   },
   welcomeTitle: {
-    fontSize: theme.typography.fontSize['4xl'],
-    fontWeight: 'bold',
+    fontSize: 30, // Reduced from 34
+    fontWeight: '600', // Lighter than bold for smoother appearance
     color: 'white',
-    marginBottom: theme.spacing[4],
+    marginBottom: 12,
     textAlign: 'center',
+    lineHeight: 36, // Adjusted for smaller font
+    fontFamily: 'Courier',
+  },
+  cursor: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontFamily: 'Courier', // Match the parent text font
   },
   welcomeSubtitle: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: 14, // Reduced from 16
     color: '#8E8E93',
     textAlign: 'center',
+    fontFamily: 'Courier',
   },
   inputContainer: {
     width: '100%',
-    marginBottom: theme.spacing[6],
+    marginBottom: 30, // Increased from 24 for more space below input
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.dark[400],
-    borderRadius: theme.borderRadius.lg,
-    paddingHorizontal: theme.spacing[4],
-    marginBottom: theme.spacing[4],
+    backgroundColor: '#1c1c1e',
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    height: 45,
   },
   inputIcon: {
-    marginRight: theme.spacing[3],
-    fontSize: theme.typography.fontSize.xl,
+    marginRight: 12,
+    fontSize: 18,
   },
   input: {
     flex: 1,
-    height: 50,
+    height: 45,
     color: 'white',
-    fontSize: theme.typography.fontSize.base,
-  },
-  emailButtonContainer: {
-    width: '100%',
-    marginBottom: theme.spacing[6],
-    shadowColor: 'transparent',
+    fontSize: 14, // Reduced from 16
+    fontFamily: 'Courier',
   },
   emailButton: {
     width: '100%',
-    height: 50,
+    height: 45, // Match input height
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.neonPurple[600],
+    backgroundColor: '#7a1cf7', // Purple color
+    marginBottom: 24,
+    shadowColor: '#7a1cf7',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3, // Reduced from 0.5
+    shadowRadius: 6, // Reduced from 10
+    elevation: 3, // Reduced from 5
+    borderWidth: 1,
+    borderColor: '#9d4eff',
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#4a4a4a', // Same as signUpButtonDisabled
+    borderColor: '#4a4a4a',
+    // Keep the shadow even when disabled
   },
   emailButtonText: {
     color: 'white',
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: 'bold',
+    fontSize: 14, // Reduced from 16
+    fontWeight: '600', // Lighter than bold for smoother appearance
+    fontFamily: 'Courier',
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing[6],
+    marginTop: 10, // Added margin top
+    marginBottom: 30, // Increased from 24
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: theme.colors.dark[400],
+    backgroundColor: '#2c2c2e',
   },
   dividerText: {
     color: '#8E8E93',
-    paddingHorizontal: theme.spacing[4],
-    fontSize: theme.typography.fontSize.base,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    fontFamily: 'Courier',
   },
   socialButtonsContainer: {
     width: '100%',
-    marginBottom: theme.spacing[6],
+    marginBottom: 24,
   },
   socialButton: {
     width: '100%',
-    height: 50,
-    backgroundColor: theme.colors.dark[400],
+    height: 45, // Match input height
+    backgroundColor: '#1c1c1e',
     borderRadius: 25,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing[4],
-    marginBottom: theme.spacing[4],
+    paddingHorizontal: 16,
+    marginBottom: 20, // Increased from 12 for more space between buttons
   },
   socialIconContainer: {
     width: 24,
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: theme.spacing[3],
+    marginRight: 12,
   },
   socialButtonText: {
     color: 'white',
-    fontSize: theme.typography.fontSize.base,
+    fontSize: 14, // Reduced from 16
+    marginLeft: 8,
+    fontWeight: '500', // Medium weight for better readability
+    fontFamily: 'Courier',
   },
   signUpContainer: {
     alignItems: 'center',
-    marginTop: theme.spacing[4],
+    marginTop: 16,
   },
   signUpText: {
     color: '#8E8E93',
-    fontSize: theme.typography.fontSize.base,
+    fontSize: 14,
+    fontFamily: 'Courier',
   },
   signUpLink: {
-    color: theme.colors.neonPurple[500],
+    color: '#8a20ff',
     fontWeight: 'bold',
+    fontFamily: 'Courier',
   },
 });
 
