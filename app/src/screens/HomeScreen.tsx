@@ -239,48 +239,7 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
         
-        {/* Bottom navigation bar */}
-        <View style={styles.bottomNav}>
-          {/* Home */}
-          <TouchableOpacity style={styles.navItem}>
-            <View style={styles.navIconContainer}>
-              <HouseIcon width={20} height={20} color="#9d4eff" />
-            </View>
-            <Text style={[styles.navText, styles.activeNavText]}>Home</Text>
-          </TouchableOpacity>
-          
-          {/* Leaderboard */}
-          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to leaderboard */}}>
-            <View style={styles.navIconContainer}>
-              <TrophyIcon width={20} height={20} color="#8E8E93" />
-            </View>
-            <Text style={styles.navText}>Leaderboard</Text>
-          </TouchableOpacity>
-          
-          {/* Achievements */}
-          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to achievements */}}>
-            <View style={styles.navIconContainer}>
-              <AwardIcon width={20} height={20} color="#8E8E93" />
-            </View>
-            <Text style={styles.navText}>Achievement</Text>
-          </TouchableOpacity>
-          
-          {/* Store */}
-          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to store */}}>
-            <View style={styles.navIconContainer}>
-              <StoreIcon width={20} height={20} color="#8E8E93" />
-            </View>
-            <Text style={styles.navText}>Store</Text>
-          </TouchableOpacity>
-          
-          {/* Profile */}
-          <TouchableOpacity style={styles.navItem} onPress={() => {/* Navigate to profile */}}>
-            <View style={styles.navIconContainer}>
-              <UserIcon width={20} height={20} color="#8E8E93" />
-            </View>
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </View>
+        {/* No custom bottom navigation - using React Navigation's Tab Navigator */}
       </View>
       
       {/* Daily Challenge Popup */}

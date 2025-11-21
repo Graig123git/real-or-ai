@@ -117,7 +117,7 @@ const RegisterScreen = () => {
             styles.signUpButton, 
             !agreeToTerms && styles.signUpButtonDisabled
           ]}
-          onPress={() => agreeToTerms && navigation.navigate('Main')}
+          onPress={() => agreeToTerms && navigation.navigate('MainTabs')}
           disabled={!agreeToTerms}
         >
           <Text style={styles.signUpButtonText}>Sign Up</Text>

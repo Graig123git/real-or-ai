@@ -92,7 +92,7 @@ const LoginScreen = () => {
             styles.emailButton, 
             (!email.trim() || !password.trim()) && styles.loginButtonDisabled
           ]}
-          onPress={() => navigation.navigate('Main')}
+          onPress={() => navigation.navigate('MainTabs')}
           disabled={!email.trim() || !password.trim()}
         >
           <Text style={styles.emailButtonText}>Login</Text>
@@ -110,7 +110,7 @@ const LoginScreen = () => {
           {/* Google Button */}
           <TouchableOpacity 
             style={styles.socialButton}
-            onPress={() => navigation.navigate('Main')}
+            onPress={() => navigation.navigate('MainTabs')}
           >
             <View style={styles.socialIconContainer}>
               <Text>G</Text>
@@ -121,7 +121,7 @@ const LoginScreen = () => {
           {/* Apple Button */}
           <TouchableOpacity 
             style={styles.socialButton}
-            onPress={() => navigation.navigate('Main')}
+            onPress={() => navigation.navigate('MainTabs')}
           >
             <View style={styles.socialIconContainer}>
               <Text>🍎</Text>
@@ -132,7 +132,7 @@ const LoginScreen = () => {
           {/* Guest Button */}
           <TouchableOpacity 
             style={styles.socialButton}
-            onPress={() => navigation.navigate('Main')}
+            onPress={() => navigation.navigate('MainTabs')}
           >
             <View style={styles.socialIconContainer}>
               <Text>👤</Text>
