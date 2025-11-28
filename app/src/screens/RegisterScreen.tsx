@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import theme from '../theme';
+import fonts from '../theme/fonts';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
@@ -149,12 +150,12 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: 'white',
     fontSize: 24,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   headerText: {
     color: 'white',
     fontSize: 20,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   headerSpacer: {
     width: 40, // Same width as back button for centering
@@ -172,13 +173,13 @@ const styles = StyleSheet.create({
     fontWeight: '600', // Lighter than bold for smoother appearance
     color: 'white',
     marginBottom: 8,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     textAlign: 'center',
   },
   registerSubtitle: {
     fontSize: 14, // Reduced from 16
     color: '#8E8E93',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     textAlign: 'center',
   },
   formContainer: {
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
     fontWeight: '500', // Medium weight for better readability
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   registerInputWrapper: {
     flexDirection: 'row',
@@ -204,14 +205,14 @@ const styles = StyleSheet.create({
   registerInputIcon: {
     marginRight: 12,
     fontSize: 18, // Match login screen
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   registerInput: {
     flex: 1,
     height: 45, // Match login screen
     color: 'white',
     fontSize: 14, // Reduced from 16 to match login input
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   termsContainer: {
     flexDirection: 'row',
@@ -242,18 +243,18 @@ const styles = StyleSheet.create({
   checkboxCheck: {
     color: 'white',
     fontSize: 12, // Reduced from 16
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   termsText: {
     color: '#8E8E93',
     fontSize: 14,
     flex: 1,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   termsLink: {
     color: '#8a20ff',
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   signUpButton: {
     width: '100%',
@@ -283,12 +284,12 @@ const styles = StyleSheet.create({
     fontSize: 14, // Reduced from 18
     fontWeight: '600', // Lighter than bold for smoother appearance
     marginRight: 8,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   signUpButtonIcon: {
     color: 'white',
     fontSize: 14, // Reduced from 18
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
 });
 

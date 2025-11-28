@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import theme from '../theme';
+import fonts from '../theme/fonts';
 
 type SplashScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Splash'>;
 
@@ -202,14 +203,14 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 20,
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   splashSubtitle: {
     fontSize: 20,
     color: 'white',
     marginBottom: 60,
     textAlign: 'center',
-    fontFamily: 'Courier', // More pixelated, arcade-style font
+    fontFamily: fonts.fontFamily.pixel, // Pixel font
     letterSpacing: 1, // Slight letter spacing for arcade-style look
     fontWeight: 'bold',
     padding: 10,
@@ -227,22 +228,23 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: fonts.fontFamily.pixel,
   },
   // New styles for the gamified splash screen
   greenText: {
     color: '#20ff8a', // Bright green color
     fontWeight: 'bold',
-    fontFamily: 'Courier', // Match the parent text font
+    fontFamily: fonts.fontFamily.pixel, // Pixel font
   },
   purpleText: {
     color: '#8a20ff', // Vibrant purple color
     fontWeight: 'bold',
-    fontFamily: 'Courier', // Match the parent text font
+    fontFamily: fonts.fontFamily.pixel, // Pixel font
   },
   cursor: {
     color: 'white',
     fontWeight: 'bold',
-    fontFamily: 'Courier', // Match the parent text font
+    fontFamily: fonts.fontFamily.pixel, // Pixel font
   },
   // Icon and title styles
   aiIconContainer: {
@@ -355,14 +357,14 @@ const styles = StyleSheet.create({
   appTitleWord: {
     fontSize: 36,
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     marginHorizontal: 8,
   },
   appTitleSeparator: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#ffffff',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
 });
 

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
+import fonts from '../theme/fonts';
 import DailyChallengePopup from '../components/DailyChallengePopup';
 import ShuffleIcon from '../components/ShuffleIcon';
 import VideoIcon from '../components/VideoIcon';
@@ -175,12 +176,8 @@ const HomeScreen = () => {
       <View style={styles.homeContainer}>
         {/* Top navigation */}
         <View style={styles.topNav}>
-          <TouchableOpacity style={styles.topNavButton}>
-            <Text style={styles.topNavIcon}>◇</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.topNavButton}>
-            <Text style={styles.topNavIcon}>ⓘ</Text>
-          </TouchableOpacity>
+          <View style={styles.topNavSpacer}></View>
+
         </View>
         
         {/* Main content */}
@@ -259,7 +256,7 @@ const styles = StyleSheet.create({
   },
   homeContent: {
     flex: 1,
-    padding: 4,
+    padding: 2,
     paddingTop: 8,
     position: 'relative', // Add position relative to parent
   },
@@ -270,7 +267,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   categoryCardContainer: {
-    width: '49.8%',
+    width: '49.9%',
     aspectRatio: 0.65, // Adjusted to find a balance in height
     marginBottom: 2,
   },
@@ -295,10 +292,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   mixedModeCard: {
-    width: '100%',
+    width: '99%',
     aspectRatio: 3.5,
     backgroundColor: '#1c1c1e',
     borderRadius: 16,
@@ -307,8 +304,9 @@ const styles = StyleSheet.create({
     padding: 12,
     position: 'absolute',
     bottom: 10, // Position at bottom of screen
-    left: 4,
-    right: 4,
+    left: 2,
+    right: 2,
+    alignSelf: 'center',
   },
   mixedModeIconContainer: {
     width: 36,
@@ -325,7 +323,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8a20ff',
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   bottomNav: {
     flexDirection: 'row',
@@ -357,7 +355,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontSize: 10,
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   topNav: {
     flexDirection: 'row',
@@ -376,7 +374,11 @@ const styles = StyleSheet.create({
   topNavIcon: {
     color: 'white',
     fontSize: 24,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  topNavSpacer: {
+    width: 40,
+    height: 40,
   },
 });
 

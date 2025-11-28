@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import theme from '../theme';
+import fonts from '../theme/fonts';
 import { SvgXml } from 'react-native-svg';
 
 // Import SVG icons
@@ -164,24 +165,8 @@ const LeaderboardScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.statusBar}>
-        <Text style={styles.statusBarTime}>7:28</Text>
-        <View style={styles.statusBarIcons}>
-          <Text style={styles.statusBarIcon}>•••</Text>
-          <Text style={styles.statusBarIcon}>📶</Text>
-          <Text style={styles.statusBarIcon}>🔋</Text>
-        </View>
       </View>
       
-      <View style={styles.headerRow}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Leaderboard</Text>
-        <View style={styles.headerSpacer} />
-      </View>
       
       <View style={styles.tabContainer}>
         <LeaderboardTab 
@@ -239,7 +224,7 @@ const styles = StyleSheet.create({
   },
   statusBarTime: {
     color: 'white',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     fontSize: 16,
   },
   statusBarIcons: {
@@ -252,28 +237,16 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
-  },
-  backButton: {
-    padding: 8,
-    width: 40,
-  },
-  backButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontFamily: 'Courier',
-  },
-  headerSpacer: {
-    width: 40,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -293,7 +266,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#a0a0a0',
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     fontSize: 16,
   },
   activeTabText: {
@@ -301,8 +274,8 @@ const styles = StyleSheet.create({
   },
   leaderboardContainer: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingTop: 4,
+    paddingHorizontal: 2,
+    paddingTop: 2,
     paddingBottom: 20,
   },
   scrollViewContent: {
@@ -313,7 +286,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 8,
-    marginVertical: 4,
+    marginVertical: 2,
     borderRadius: 12,
     backgroundColor: '#1e1e1e',
   },
@@ -333,7 +306,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 20,
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   userContainer: {
     flex: 1,
@@ -355,7 +328,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   userInfo: {
     flex: 1,
@@ -365,7 +338,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
     marginBottom: 1,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   countryAccuracyRow: {
     flexDirection: 'row',
@@ -374,12 +347,12 @@ const styles = StyleSheet.create({
   countryText: {
     fontSize: 11,
     marginRight: 6,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   accuracyText: {
     color: '#a0a0a0',
     fontSize: 11,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   scoreContainer: {
     flexDirection: 'row',
@@ -390,13 +363,13 @@ const styles = StyleSheet.create({
     color: '#20ff8a',
     marginRight: 2,
     fontSize: 14,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   scoreText: {
     color: '#00FF55',
     fontWeight: 'bold',
     fontSize: 16,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     marginLeft: 4,
   },
   currentUserText: {

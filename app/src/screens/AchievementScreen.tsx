@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import { SvgXml } from 'react-native-svg';
 import theme from '../theme';
+import fonts from '../theme/fonts';
 
 type AchievementScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Achievement'>;
 
@@ -76,7 +77,10 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
   const { title, description, unlocked, icon } = achievement;
   
   return (
-    <View style={styles.achievementCard}>
+    <View style={[
+      styles.achievementCard,
+      unlocked ? styles.unlockedCard : styles.lockedCard
+    ]}>
       <View style={styles.achievementIconContainer}>
         <SvgXml xml={icon} width={32} height={32} />
       </View>
@@ -103,7 +107,7 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
 const AchievementScreen = () => {
   const navigation = useNavigation<AchievementScreenNavigationProp>();
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = (screenWidth - 48) / 2; // 2 columns with padding
+  const cardWidth = (screenWidth - 8) / 2; // 2 columns with minimal padding
   
   // Mock achievements data based on the image
   const achievements: Achievement[] = [
@@ -148,6 +152,34 @@ const AchievementScreen = () => {
       description: 'Win 10 Mixed Mode games with over 80% accuracy.',
       unlocked: false,
       icon: starIcon
+    },
+    {
+      id: 'speed_demon',
+      title: 'Speed Demon',
+      description: 'Complete 20 rounds in under 2 minutes each with at least 70% accuracy.',
+      unlocked: false,
+      icon: brainIcon
+    },
+    {
+      id: 'perfect_score',
+      title: 'Perfect Score',
+      description: 'Achieve 100% accuracy in any category at least once.',
+      unlocked: false,
+      icon: gavelIcon
+    },
+    {
+      id: 'consistency_king',
+      title: 'Consistency King',
+      description: 'Maintain at least 75% accuracy across 50 consecutive rounds.',
+      unlocked: false,
+      icon: eyeIcon
+    },
+    {
+      id: 'social_butterfly',
+      title: 'Social Butterfly',
+      description: 'Challenge and defeat 10 different friends in duels.',
+      unlocked: false,
+      icon: earIcon
     }
   ];
   
@@ -155,24 +187,16 @@ const AchievementScreen = () => {
     <View style={styles.container}>
       {/* Status Bar */}
       <View style={styles.statusBar}>
-        <Text style={styles.statusBarTime}>9:41</Text>
-        <View style={styles.statusBarIcons}>
-          <Text style={styles.statusBarIcon}>•••</Text>
-          <Text style={styles.statusBarIcon}>📶</Text>
-          <Text style={styles.statusBarIcon}>🔋</Text>
-        </View>
-      </View>
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Achievement</Text>
       </View>
       
       {/* Divider */}
       <View style={styles.divider} />
       
       {/* Achievements Grid */}
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContentContainer}
+      >
         <View style={styles.achievementsGrid}>
           {achievements.map((achievement) => (
             <View key={achievement.id} style={[styles.cardContainer, { width: cardWidth }]}>
@@ -201,7 +225,7 @@ const styles = StyleSheet.create({
   },
   statusBarTime: {
     color: 'white',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     fontSize: 16,
   },
   statusBarIcons: {
@@ -210,6 +234,7 @@ const styles = StyleSheet.create({
   statusBarIcon: {
     color: 'white',
     marginLeft: 8,
+    fontFamily: fonts.fontFamily.pixel,
   },
   header: {
     flexDirection: 'row',
@@ -224,39 +249,76 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: 'white',
     fontSize: 24,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
-    fontFamily: 'Courier',
+    color: '#bf00ff',
+    fontFamily: fonts.fontFamily.pixel,
+    textShadowColor: 'rgba(191, 0, 255, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   divider: {
     height: 1,
-    backgroundColor: '#333',
+    backgroundColor: '#bf00ff',
     marginHorizontal: 0,
+    opacity: 0.3,
+    shadowColor: '#bf00ff',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
   },
   scrollContainer: {
     flex: 1,
-    padding: 12,
+    padding: 2,
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 0,
   },
   achievementsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    alignItems: 'stretch',
+    flexGrow: 1,
+    paddingBottom: 0,
   },
   cardContainer: {
-    marginBottom: 16,
+    marginBottom: 8,
+    height: 200,
+    flexGrow: 0,
   },
   achievementCard: {
     backgroundColor: '#1e1e1e',
     borderRadius: 12,
     padding: 16,
-    height: 180,
+    height: '100%',
     justifyContent: 'flex-start',
     position: 'relative',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#333',
+    shadowColor: '#bf00ff',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  unlockedCard: {
+    borderColor: '#333',
+  },
+  lockedCard: {
+    borderWidth: 1,
+    borderColor: '#333',
+    shadowColor: '#bf00ff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
   },
   achievementIconContainer: {
     width: 64,
@@ -266,18 +328,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    shadowColor: '#bf00ff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 5,
   },
   achievementTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#ffffff',
     marginBottom: 8,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
+    textAlign: 'center',
+    textShadowColor: 'rgba(191, 0, 255, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   achievementDescription: {
     fontSize: 12,
     color: '#a0a0a0',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
+    textAlign: 'center',
   },
   lockedOverlay: {
     position: 'absolute',
@@ -285,16 +359,20 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   lockedText: {
-    color: 'white',
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 8,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
+    textShadowColor: '#bf00ff',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+    letterSpacing: 1,
   },
   tabBar: {
     flexDirection: 'row',
@@ -316,7 +394,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 10,
     marginTop: 4,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   activeTabText: {
     color: '#bf00ff',

@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import { SvgXml } from 'react-native-svg';
+import fonts from '../theme/fonts';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Profile'>;
 
@@ -41,6 +42,15 @@ const emailIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" x
 const { width, height } = Dimensions.get('window');
 const screenWidth = width;
 const screenHeight = height;
+const isSmallDevice = screenWidth < 375; // iPhone SE, 5, etc.
+
+// Scale factor for smaller devices
+const scale = isSmallDevice ? 0.85 : 1;
+
+// Function to scale sizes based on device width
+const size = (size: number): number => {
+  return Math.round(size * scale);
+};
 
 const PlanOption = ({ 
   title, 
@@ -104,13 +114,32 @@ const ProfileScreen = () => {
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* User Profile Card */}
         <View style={styles.profileCard}>
-          {/* Glowing profile image container */}
-          <View style={styles.profileImageOuterGlow}>
-            <View style={styles.profileImageInnerGlow}>
-              <Image 
-                source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
-                style={styles.profileImage} 
-              />
+          {/* Background and profile image container */}
+          <View style={styles.profileImageContainer}>
+            {/* Background image */}
+            <Image 
+              source={{ uri: 'https://images.pexels.com/photos/3052361/pexels-photo-3052361.jpeg?auto=compress&cs=tinysrgb&w=1000' }} 
+              style={styles.backgroundImage} 
+            />
+            
+            {/* Camera icon for background */}
+            <TouchableOpacity style={styles.backgroundCameraButton}>
+              <Text style={styles.cameraIcon}>📷</Text>
+            </TouchableOpacity>
+            
+            {/* Profile image with glow */}
+            <View style={styles.profileImageOuterGlow}>
+              <View style={styles.profileImageInnerGlow}>
+                <Image 
+                  source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
+                  style={styles.profileImage} 
+                />
+                
+                {/* Camera icon for profile */}
+                <TouchableOpacity style={styles.profileCameraButton}>
+                  <Text style={styles.cameraIcon}>📷</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
           
@@ -232,7 +261,7 @@ const ProfileScreen = () => {
         </View>
         
         {/* Bottom spacing */}
-        <View style={{ height: 80 }} />
+        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
@@ -247,50 +276,103 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: screenWidth * 0.05,
-    paddingVertical: screenHeight * 0.02,
+    paddingHorizontal: 16,
+    paddingTop: isSmallDevice ? 8 : 16,
+    paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#222',
-    height: screenHeight * 0.08,
+    height: isSmallDevice ? 50 : 60,
+  },
+  // New profile image container styles
+  profileImageContainer: {
+    height: isSmallDevice ? screenWidth * 0.4 : screenWidth * 0.5,
+    position: 'relative',
+    marginBottom: isSmallDevice ? 40 : 50,
+    borderRadius: 0,
+    overflow: 'visible',
+    marginTop: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    width: '100%',
+  },
+  backgroundImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  backgroundCameraButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    width: size(32),
+    height: size(32),
+    borderRadius: size(16),
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  profileCameraButton: {
+    position: 'absolute',
+    bottom: -10,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    width: size(36),
+    height: size(36),
+    borderRadius: size(18),
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+    borderWidth: 2,
+    borderColor: '#bf00ff',
+  },
+  cameraIcon: {
+    fontSize: size(16),
   },
   headerTitle: {
     color: 'white',
-    fontSize: Math.min(20, screenWidth * 0.05),
+    fontSize: size(18),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   scrollContainer: {
     flex: 1,
-    padding: 4,
     paddingTop: 8,
+    paddingHorizontal: 2,
   },
   profileCard: {
     backgroundColor: '#1c1c1e',
     borderRadius: 16,
-    padding: screenWidth * 0.04,
-    marginBottom: 8,
+    padding: 0,
+    paddingBottom: 12,
+    marginBottom: 6,
     alignItems: 'center',
-    width: '100%',
+    width: '99%',
+    alignSelf: 'center',
+    overflow: 'hidden',
   },
   // Profile image with glow effects
   profileImageOuterGlow: {
-    width: screenWidth * 0.22,
-    height: screenWidth * 0.22,
-    borderRadius: screenWidth * 0.11,
+    position: 'absolute',
+    bottom: isSmallDevice ? -screenWidth * 0.12 : -screenWidth * 0.15,
+    alignSelf: 'center',
+    width: size(100),
+    height: size(100),
+    borderRadius: size(50),
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: screenHeight * 0.02,
     shadowColor: '#bf00ff',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 1,
     shadowRadius: 15,
-    elevation: 10,
+    elevation: 15,
+    zIndex: 3,
   },
   profileImageInnerGlow: {
-    width: screenWidth * 0.2,
-    height: screenWidth * 0.2,
-    borderRadius: screenWidth * 0.1,
+    width: size(90),
+    height: size(90),
+    borderRadius: size(45),
     backgroundColor: '#222',
     justifyContent: 'center',
     alignItems: 'center',
@@ -298,28 +380,31 @@ const styles = StyleSheet.create({
     borderColor: '#bf00ff',
   },
   profileImage: {
-    width: screenWidth * 0.18,
-    height: screenWidth * 0.18,
-    borderRadius: screenWidth * 0.09,
+    width: size(80),
+    height: size(80),
+    borderRadius: size(40),
   },
   
   // Username and level styling
   username: {
     color: 'white',
-    fontSize: Math.min(22, screenWidth * 0.055),
+    fontSize: size(20),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
-    marginBottom: screenHeight * 0.01,
+    fontFamily: fonts.fontFamily.pixel,
+    marginTop: isSmallDevice ? 40 : 50,
+    marginBottom: 8,
     textShadowColor: 'rgba(191, 0, 255, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
+    textAlign: 'center',
+    paddingHorizontal: 12,
   },
   levelBadge: {
     backgroundColor: '#8a20ff',
-    paddingHorizontal: screenWidth * 0.04,
-    paddingVertical: screenHeight * 0.006,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
     borderRadius: 20,
-    marginBottom: screenHeight * 0.02,
+    marginBottom: 12,
     shadowColor: '#bf00ff',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
@@ -328,23 +413,24 @@ const styles = StyleSheet.create({
   },
   levelText: {
     color: 'white',
-    fontSize: Math.min(14, screenWidth * 0.035),
+    fontSize: size(12),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   
   // Enhanced XP bar styling
   xpContainerWrapper: {
     width: '100%',
-    marginBottom: screenHeight * 0.02,
+    marginBottom: 8,
+    paddingHorizontal: 12,
   },
   xpContainer: {
     width: '100%',
-    height: 12,
+    height: 8,
     backgroundColor: '#333',
-    borderRadius: 6,
+    borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: screenHeight * 0.005,
+    marginBottom: 2,
     position: 'relative',
   },
   xpProgress: {
@@ -385,29 +471,33 @@ const styles = StyleSheet.create({
   xpLabelsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginTop: 2,
   },
   xpText: {
     color: '#999',
-    fontSize: Math.min(12, screenWidth * 0.03),
-    fontFamily: 'Courier',
+    fontSize: size(10),
+    fontFamily: fonts.fontFamily.pixel,
+    fontWeight: 'bold',
   },
   xpPercentage: {
     color: '#4CAF50',
-    fontSize: Math.min(12, screenWidth * 0.03),
-    fontFamily: 'Courier',
+    fontSize: size(10),
+    fontFamily: fonts.fontFamily.pixel,
     fontWeight: 'bold',
   },
   
   // Stats row styling
   statsRow: {
     flexDirection: 'row',
-    width: '100%',
+    width: 'auto',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#222',
     borderRadius: 12,
-    padding: screenWidth * 0.03,
-    marginTop: screenHeight * 0.01,
+    padding: 12,
+    marginTop: 8,
+    marginHorizontal: 12,
   },
   statItem: {
     flex: 1,
@@ -415,41 +505,42 @@ const styles = StyleSheet.create({
   },
   statValue: {
     color: 'white',
-    fontSize: Math.min(18, screenWidth * 0.045),
+    fontSize: size(16),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   statLabel: {
     color: '#999',
-    fontSize: Math.min(12, screenWidth * 0.03),
-    fontFamily: 'Courier',
+    fontSize: size(10),
+    fontFamily: fonts.fontFamily.pixel,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
-    height: screenHeight * 0.04,
+    height: 24,
     backgroundColor: '#444',
   },
   upgradeCard: {
     backgroundColor: '#1c1c1e',
     borderRadius: 16,
-    padding: screenWidth * 0.04,
-    marginBottom: 8,
-    width: '100%',
+    padding: 12,
+    marginBottom: 6,
+    width: '99%',
+    alignSelf: 'center',
   },
   upgradeTitle: {
     color: 'white',
-    fontSize: Math.min(20, screenWidth * 0.05),
+    fontSize: size(18),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
-    marginBottom: screenHeight * 0.01,
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 8,
   },
   upgradeDescription: {
     color: '#ccc',
-    fontSize: Math.min(14, screenWidth * 0.035),
-    fontFamily: 'Courier',
-    marginBottom: screenHeight * 0.02,
-    lineHeight: 20,
+    fontSize: size(12),
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 12,
+    lineHeight: size(16),
   },
   planOption: {
     flexDirection: 'row',
@@ -457,65 +548,66 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#222',
     borderRadius: 12,
-    padding: screenWidth * 0.04,
-    marginBottom: screenHeight * 0.01,
+    padding: 12,
+    marginBottom: 8,
   },
   planDetails: {
     flex: 1,
   },
   planTitle: {
     color: 'white',
-    fontSize: Math.min(16, screenWidth * 0.04),
+    fontSize: size(14),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   saveText: {
     color: '#4CAF50',
-    fontSize: Math.min(12, screenWidth * 0.03),
-    fontFamily: 'Courier',
+    fontSize: size(10),
+    fontFamily: fonts.fontFamily.pixel,
   },
   planPrice: {
     color: 'white',
-    fontSize: Math.min(16, screenWidth * 0.04),
+    fontSize: size(14),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   getProButton: {
     backgroundColor: '#8a20ff',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: screenHeight * 0.015,
+    paddingVertical: 12,
     borderRadius: 12,
-    marginTop: screenHeight * 0.01,
+    marginTop: 12,
   },
   getProButtonText: {
     color: 'white',
-    fontSize: Math.min(16, screenWidth * 0.04),
+    fontSize: size(14),
     fontWeight: 'bold',
     marginRight: 10,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   coinPacksCard: {
     backgroundColor: '#1c1c1e',
     borderRadius: 16,
-    padding: screenWidth * 0.04,
-    marginBottom: 8,
-    width: '100%',
+    padding: 12,
+    marginBottom: 6,
+    width: '99%',
+    alignSelf: 'center',
   },
   coinPacksTitle: {
     color: 'white',
-    fontSize: Math.min(20, screenWidth * 0.05),
+    fontSize: size(18),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
-    marginBottom: screenHeight * 0.01,
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 8,
   },
   coinPacksDescription: {
     color: '#ccc',
-    fontSize: Math.min(14, screenWidth * 0.035),
-    fontFamily: 'Courier',
-    marginBottom: screenHeight * 0.02,
-    lineHeight: 20,
+    fontSize: size(12),
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 12,
+    lineHeight: size(16),
   },
   coinPackOption: {
     flexDirection: 'row',
@@ -523,8 +615,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#222',
     borderRadius: 12,
-    padding: screenWidth * 0.04,
-    marginBottom: screenHeight * 0.01,
+    padding: 12,
+    marginBottom: 8,
   },
   coinPackDetails: {
     flexDirection: 'row',
@@ -533,109 +625,111 @@ const styles = StyleSheet.create({
   },
   coinAmount: {
     color: 'white',
-    fontSize: Math.min(16, screenWidth * 0.04),
+    fontSize: size(14),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     marginLeft: 10,
   },
   coinPrice: {
     color: '#999',
-    fontSize: Math.min(14, screenWidth * 0.035),
-    fontFamily: 'Courier',
+    fontSize: size(12),
+    fontFamily: fonts.fontFamily.pixel,
     marginLeft: 10,
   },
   buyButton: {
     backgroundColor: '#4CAF50',
-    paddingVertical: screenHeight * 0.01,
-    paddingHorizontal: screenWidth * 0.04,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 20,
   },
   buyButtonText: {
     color: 'white',
-    fontSize: Math.min(14, screenWidth * 0.035),
+    fontSize: size(12),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   viewAllPacksButton: {
     backgroundColor: '#1a1a1a',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: screenHeight * 0.015,
+    paddingVertical: 12,
     borderRadius: 12,
-    marginTop: screenHeight * 0.01,
+    marginTop: 12,
     borderWidth: 1,
     borderColor: '#4CAF50',
   },
   viewAllPacksButtonText: {
     color: '#4CAF50',
-    fontSize: Math.min(16, screenWidth * 0.04),
+    fontSize: size(14),
     fontWeight: 'bold',
     marginRight: 10,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   preferencesCard: {
     backgroundColor: '#1c1c1e',
     borderRadius: 16,
-    padding: screenWidth * 0.04,
-    marginBottom: 8,
-    width: '100%',
+    padding: 12,
+    marginBottom: 6,
+    width: '99%',
+    alignSelf: 'center',
   },
   preferencesTitle: {
     color: 'white',
-    fontSize: Math.min(20, screenWidth * 0.05),
+    fontSize: size(18),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
-    marginBottom: screenHeight * 0.02,
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 12,
   },
   preferenceOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: screenHeight * 0.015,
+    marginBottom: 12,
   },
   preferenceIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: size(30),
+    height: size(30),
+    borderRadius: size(15),
     backgroundColor: '#222',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 8,
   },
   preferenceText: {
     color: 'white',
-    fontSize: Math.min(16, screenWidth * 0.04),
-    fontFamily: 'Courier',
+    fontSize: size(14),
+    fontFamily: fonts.fontFamily.pixel,
     flex: 1,
   },
   dangerZoneCard: {
     backgroundColor: '#1c1c1e',
     borderRadius: 16,
-    padding: screenWidth * 0.04,
-    marginBottom: 8,
-    width: '100%',
+    padding: 12,
+    marginBottom: 6,
+    width: '99%',
+    alignSelf: 'center',
   },
   dangerZoneTitle: {
     color: 'white',
-    fontSize: Math.min(20, screenWidth * 0.05),
+    fontSize: size(18),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
-    marginBottom: screenHeight * 0.02,
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 12,
   },
   deleteAccountButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#FF3B30',
     borderRadius: 12,
-    paddingVertical: screenHeight * 0.015,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   deleteAccountButtonText: {
     color: '#FF3B30',
-    fontSize: Math.min(16, screenWidth * 0.04),
+    fontSize: size(14),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
 });
 

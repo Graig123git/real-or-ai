@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import theme from '../theme';
+import fonts from '../theme/fonts';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
   headerText: {
     color: 'white',
     fontSize: 20, // Reduced from 18
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   loginContent: {
     flex: 1,
@@ -186,18 +187,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
     lineHeight: 36, // Adjusted for smaller font
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   cursor: {
     color: 'white',
     fontWeight: 'bold',
-    fontFamily: 'Courier', // Match the parent text font
+    fontFamily: fonts.fontFamily.pixel, // Match the parent text font
   },
   welcomeSubtitle: {
     fontSize: 14, // Reduced from 16
     color: '#8E8E93',
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   inputContainer: {
     width: '100%',
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
     height: 45,
     color: 'white',
     fontSize: 14, // Reduced from 16
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   emailButton: {
     width: '100%',
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14, // Reduced from 16
     fontWeight: '600', // Lighter than bold for smoother appearance
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     paddingHorizontal: 16,
     fontSize: 14,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   socialButtonsContainer: {
     width: '100%',
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
     fontSize: 14, // Reduced from 16
     marginLeft: 8,
     fontWeight: '500', // Medium weight for better readability
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   signUpContainer: {
     alignItems: 'center',
@@ -302,12 +303,12 @@ const styles = StyleSheet.create({
   signUpText: {
     color: '#8E8E93',
     fontSize: 14,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   signUpLink: {
     color: '#8a20ff',
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
 });
 

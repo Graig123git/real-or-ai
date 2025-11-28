@@ -1,5 +1,6 @@
 // Theme configuration for the "Real or AI?" app
 // Neon purple and green on dark theme
+import fonts from './fonts';
 
 export const colors = {
   // Neon purple palette
@@ -46,6 +47,8 @@ export const typography = {
     sans: 'System',
     mono: 'Menlo',
     courier: 'Courier',
+    pixel: 'Press Start 2P',
+    rajdhani: 'Rajdhani',
   },
   fontSize: {
     xs: 12,
@@ -148,6 +151,7 @@ const theme = {
   spacing,
   borderRadius,
   shadows,
+  fonts,
 };
 
 export default theme;

@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import { SvgXml } from 'react-native-svg';
+import fonts from '../theme/fonts';
 
 type ChallengeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Challenge'>;
 
@@ -50,135 +51,139 @@ const ChallengeScreen = () => {
 
       {/* Main Content */}
       <View style={styles.content}>
-        {/* Title Section */}
-        <View style={styles.titleSection}>
-          <Text style={styles.mainTitle}>Ready for the ultimate duel?</Text>
-          <Text style={styles.subtitle}>
-            Challenge friends or face a random opponent in the ultimate AI detection game.
-          </Text>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Title Section */}
+          <View style={styles.card}>
+            <View style={styles.titleSection}>
+              <Text style={styles.mainTitle}>Ready for the ultimate duel?</Text>
+              <Text style={styles.subtitle}>
+                Challenge friends or face a random opponent in the ultimate AI detection game.
+              </Text>
 
-          {/* Invite Friend Button */}
-          <TouchableOpacity style={styles.inviteButton}>
-            <SvgXml xml={userPlusIcon} width={20} height={20} />
-            <Text style={styles.buttonText}>Invite Friend</Text>
-          </TouchableOpacity>
+              {/* Invite Friend Button */}
+              <TouchableOpacity style={styles.inviteButton}>
+                <SvgXml xml={userPlusIcon} width={20} height={20} />
+                <Text style={styles.buttonText}>Invite Friend</Text>
+              </TouchableOpacity>
 
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
+              {/* Divider */}
+              <View style={styles.dividerContainer}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.dividerLine} />
+              </View>
+            </View>
           </View>
-        </View>
 
-        {/* Incoming Challenge Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Incoming Challenge</Text>
-          
-          {/* Scrollable Challenge Cards */}
-          <ScrollView 
-            style={styles.challengeList}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Challenge Card - Smaller and more compact */}
-            <View style={styles.challengeCard}>
-              <View style={styles.challengeHeader}>
-                <View style={styles.userInfo}>
-                  <Image 
-                    source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }} 
-                    style={styles.avatar} 
-                  />
-                  <View style={styles.onlineIndicator} />
-                  <View>
-                    <Text style={styles.username}>CyberNinja_AI</Text>
-                    <Text style={styles.challengeText}>challenges you to a duel!</Text>
+          {/* Incoming Challenge Section */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Incoming Challenge</Text>
+            
+            {/* Scrollable Challenge Cards */}
+            <ScrollView 
+              style={styles.challengeList}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Challenge Card - Smaller and more compact */}
+              <View style={styles.challengeCard}>
+                <View style={styles.challengeHeader}>
+                  <View style={styles.userInfo}>
+                    <Image 
+                      source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }} 
+                      style={styles.avatar} 
+                    />
+                    <View style={styles.onlineIndicator} />
+                    <View>
+                      <Text style={styles.username}>CyberNinja_AI</Text>
+                      <Text style={styles.challengeText}>challenges you to a duel!</Text>
+                    </View>
                   </View>
+                  <Text style={styles.timeAgo}>2 hours ago</Text>
                 </View>
-                <Text style={styles.timeAgo}>2 hours ago</Text>
+                
+                <View style={styles.challengeActions}>
+                  <TouchableOpacity style={styles.acceptButton}>
+                    <Text style={styles.acceptButtonText}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.declineButton}>
+                    <Text style={styles.declineButtonText}>Decline</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
               
-              <View style={styles.challengeActions}>
-                <TouchableOpacity style={styles.acceptButton}>
-                  <Text style={styles.acceptButtonText}>Accept</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.declineButton}>
-                  <Text style={styles.declineButtonText}>Decline</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            
-            {/* Additional Challenge Card */}
-            <View style={styles.challengeCard}>
-              <View style={styles.challengeHeader}>
-                <View style={styles.userInfo}>
-                  <Image 
-                    source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
-                    style={styles.avatar} 
-                  />
-                  <View style={styles.onlineIndicator} />
-                  <View>
-                    <Text style={styles.username}>AIDetector_Pro</Text>
-                    <Text style={styles.challengeText}>challenges you to a duel!</Text>
+              {/* Additional Challenge Card */}
+              <View style={styles.challengeCard}>
+                <View style={styles.challengeHeader}>
+                  <View style={styles.userInfo}>
+                    <Image 
+                      source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
+                      style={styles.avatar} 
+                    />
+                    <View style={styles.onlineIndicator} />
+                    <View>
+                      <Text style={styles.username}>AIDetector_Pro</Text>
+                      <Text style={styles.challengeText}>challenges you to a duel!</Text>
+                    </View>
                   </View>
+                  <Text style={styles.timeAgo}>5 hours ago</Text>
                 </View>
-                <Text style={styles.timeAgo}>5 hours ago</Text>
+                
+                <View style={styles.challengeActions}>
+                  <TouchableOpacity style={styles.acceptButton}>
+                    <Text style={styles.acceptButtonText}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.declineButton}>
+                    <Text style={styles.declineButtonText}>Decline</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
               
-              <View style={styles.challengeActions}>
-                <TouchableOpacity style={styles.acceptButton}>
-                  <Text style={styles.acceptButtonText}>Accept</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.declineButton}>
-                  <Text style={styles.declineButtonText}>Decline</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            
-            {/* Third Challenge Card for demonstration */}
-            <View style={styles.challengeCard}>
-              <View style={styles.challengeHeader}>
-                <View style={styles.userInfo}>
-                  <Image 
-                    source={{ uri: 'https://randomuser.me/api/portraits/women/22.jpg' }} 
-                    style={styles.avatar} 
-                  />
-                  <View style={styles.onlineIndicator} />
-                  <View>
-                    <Text style={styles.username}>TechWizard</Text>
-                    <Text style={styles.challengeText}>challenges you to a duel!</Text>
+              {/* Third Challenge Card for demonstration */}
+              <View style={styles.challengeCard}>
+                <View style={styles.challengeHeader}>
+                  <View style={styles.userInfo}>
+                    <Image 
+                      source={{ uri: 'https://randomuser.me/api/portraits/women/22.jpg' }} 
+                      style={styles.avatar} 
+                    />
+                    <View style={styles.onlineIndicator} />
+                    <View>
+                      <Text style={styles.username}>TechWizard</Text>
+                      <Text style={styles.challengeText}>challenges you to a duel!</Text>
+                    </View>
                   </View>
+                  <Text style={styles.timeAgo}>8 hours ago</Text>
                 </View>
-                <Text style={styles.timeAgo}>8 hours ago</Text>
+                
+                <View style={styles.challengeActions}>
+                  <TouchableOpacity style={styles.acceptButton}>
+                    <Text style={styles.acceptButtonText}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.declineButton}>
+                    <Text style={styles.declineButtonText}>Decline</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-              
-              <View style={styles.challengeActions}>
-                <TouchableOpacity style={styles.acceptButton}>
-                  <Text style={styles.acceptButtonText}>Accept</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.declineButton}>
-                  <Text style={styles.declineButtonText}>Decline</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* Quick Match Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Match</Text>
-          
-          <View style={styles.quickMatchCard}>
-            <Text style={styles.quickMatchTitle}>Instant Duel</Text>
-            <Text style={styles.quickMatchDescription}>
-              Jump into a quick match against a random opponent and test your skills.
-            </Text>
-            
-            <TouchableOpacity style={styles.quickMatchButton}>
-              <SvgXml xml={swordsIcon} width={24} height={24} />
-              <Text style={styles.quickMatchButtonText}>Play Quick Match</Text>
-            </TouchableOpacity>
+            </ScrollView>
           </View>
-        </View>
+
+          {/* Quick Match Section */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Quick Match</Text>
+            
+            <View>
+              <Text style={styles.quickMatchTitle}>Instant Duel</Text>
+              <Text style={styles.quickMatchDescription}>
+                Jump into a quick match against a random opponent and test your skills.
+              </Text>
+              
+              <TouchableOpacity style={styles.quickMatchButton}>
+                <SvgXml xml={swordsIcon} width={24} height={24} />
+                <Text style={styles.quickMatchButtonText}>Play Quick Match</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       </View>
     </View>
   );
@@ -188,6 +193,15 @@ const ChallengeScreen = () => {
 const { width, height } = Dimensions.get('window');
 const screenWidth = width;
 const screenHeight = height;
+const isSmallDevice = screenWidth < 375; // iPhone SE, 5, etc.
+
+// Scale factor for smaller devices
+const scale = isSmallDevice ? 0.85 : 1;
+
+// Function to scale sizes based on device width
+const size = (size: number): number => {
+  return Math.round(size * scale);
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -198,64 +212,81 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: screenWidth * 0.05,
-    paddingVertical: screenHeight * 0.02,
+    paddingHorizontal: 16,
+    paddingTop: isSmallDevice ? 8 : 16,
+    paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#222',
-    height: screenHeight * 0.08,
+    height: isSmallDevice ? 50 : 60,
   },
   headerTitle: {
     color: 'white',
-    fontSize: Math.min(20, screenWidth * 0.05),
+    fontSize: size(18),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   content: {
     flex: 1,
-    padding: screenWidth * 0.04,
+    padding: 2,
+    paddingHorizontal: 2,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 0,
+  },
+  card: {
+    backgroundColor: '#1c1c1e',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 8,
+    width: '99%',
+    alignSelf: 'center',
+    flexGrow: 1,
   },
   titleSection: {
-    marginBottom: screenHeight * 0.015,
+    marginBottom: 12,
   },
   section: {
-    marginBottom: screenHeight * 0.015,
+    marginBottom: 12,
   },
   mainTitle: {
     color: '#bf00ff',
-    fontSize: Math.min(26, screenWidth * 0.065),
+    fontSize: size(22),
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: screenHeight * 0.008,
-    fontFamily: 'Courier',
+    marginBottom: 6,
+    fontFamily: fonts.fontFamily.pixel,
   },
   subtitle: {
     color: 'white',
-    fontSize: Math.min(14, screenWidth * 0.035),
+    fontSize: size(12),
     textAlign: 'center',
-    marginBottom: screenHeight * 0.015,
-    lineHeight: 20,
-    fontFamily: 'Courier',
+    marginBottom: 12,
+    lineHeight: size(16),
+    fontFamily: fonts.fontFamily.pixel,
   },
   inviteButton: {
     backgroundColor: '#bf00ff',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: screenHeight * 0.015,
+    paddingVertical: 12,
     borderRadius: 8,
-    marginBottom: screenHeight * 0.015,
+    marginBottom: 12,
+    width: '100%',
   },
   buttonText: {
     color: 'white',
-    fontSize: Math.min(16, screenWidth * 0.04),
+    fontSize: size(14),
     fontWeight: 'bold',
     marginLeft: 10,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: screenHeight * 0.02,
+    marginBottom: 16,
   },
   dividerLine: {
     flex: 1,
@@ -265,30 +296,32 @@ const styles = StyleSheet.create({
   dividerText: {
     color: '#666',
     paddingHorizontal: 16,
-    fontSize: Math.min(14, screenWidth * 0.035),
-    fontFamily: 'Courier',
+    fontSize: size(12),
+    fontFamily: fonts.fontFamily.pixel,
   },
   sectionTitle: {
     color: 'white',
-    fontSize: Math.min(22, screenWidth * 0.055),
+    fontSize: size(18),
     fontWeight: 'bold',
-    marginBottom: screenHeight * 0.01,
-    fontFamily: 'Courier',
+    marginBottom: 8,
+    fontFamily: fonts.fontFamily.pixel,
   },
   challengeList: {
-    maxHeight: screenHeight * 0.22, // Slightly reduce the height of the challenge list to give more space to Quick Match
+    maxHeight: isSmallDevice ? screenHeight * 0.18 : screenHeight * 0.22,
   },
   challengeCard: {
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
-    padding: screenWidth * 0.03,
-    marginBottom: screenHeight * 0.01,
+    padding: 10,
+    marginBottom: 2,
+    width: '99%',
+    alignSelf: 'center',
   },
   challengeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: screenHeight * 0.006,
+    marginBottom: 4,
   },
   userInfo: {
     flexDirection: 'row',
@@ -296,109 +329,111 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   avatar: {
-    width: screenWidth * 0.08,
-    height: screenWidth * 0.08,
-    borderRadius: screenWidth * 0.04,
-    marginRight: screenWidth * 0.02,
+    width: size(28),
+    height: size(28),
+    borderRadius: size(14),
+    marginRight: 8,
   },
   onlineIndicator: {
-    width: screenWidth * 0.02,
-    height: screenWidth * 0.02,
+    width: size(6),
+    height: size(6),
     backgroundColor: '#4CAF50',
-    borderRadius: screenWidth * 0.01,
+    borderRadius: size(3),
     position: 'absolute',
     bottom: 0,
-    left: screenWidth * 0.06,
+    left: size(20),
     borderWidth: 1,
     borderColor: '#1a1a1a',
   },
   username: {
     color: 'white',
-    fontSize: Math.min(14, screenWidth * 0.035),
+    fontSize: size(12),
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   challengeText: {
     color: '#ccc',
-    fontSize: Math.min(12, screenWidth * 0.03),
-    fontFamily: 'Courier',
+    fontSize: size(10),
+    fontFamily: fonts.fontFamily.pixel,
   },
   timeAgo: {
     color: '#666',
-    fontSize: Math.min(10, screenWidth * 0.025),
-    fontFamily: 'Courier',
+    fontSize: size(9),
+    fontFamily: fonts.fontFamily.pixel,
     alignSelf: 'flex-start',
   },
   challengeActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: screenHeight * 0.004,
+    marginTop: 4,
   },
   acceptButton: {
     backgroundColor: '#4CAF50',
-    paddingVertical: screenHeight * 0.006,
-    paddingHorizontal: screenWidth * 0.035,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 6,
     marginRight: 8,
   },
   acceptButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontFamily: 'Courier',
-    fontSize: Math.min(12, screenWidth * 0.03),
+    fontFamily: fonts.fontFamily.pixel,
+    fontSize: size(10),
   },
   declineButton: {
     backgroundColor: '#333',
-    paddingVertical: screenHeight * 0.006,
-    paddingHorizontal: screenWidth * 0.035,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 6,
   },
   declineButtonText: {
     color: 'white',
-    fontFamily: 'Courier',
-    fontSize: Math.min(12, screenWidth * 0.03),
+    fontFamily: fonts.fontFamily.pixel,
+    fontSize: size(10),
   },
   quickMatchCard: {
     backgroundColor: '#1a1a1a',
     borderRadius: 16,
-    padding: screenWidth * 0.05,
-    marginBottom: screenHeight * 0.01,
-    minHeight: screenHeight * 0.25, // Make the card taller
-    justifyContent: 'space-between', // Distribute content evenly
-    elevation: 5, // Add shadow on Android
-    shadowColor: '#bf00ff', // Add shadow on iOS
+    padding: 12,
+    marginBottom: 6,
+    minHeight: isSmallDevice ? screenHeight * 0.22 : screenHeight * 0.25,
+    justifyContent: 'space-between',
+    elevation: 5,
+    shadowColor: '#bf00ff',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
+    width: '99%',
+    alignSelf: 'center',
   },
   quickMatchTitle: {
     color: 'white',
-    fontSize: Math.min(22, screenWidth * 0.055),
+    fontSize: size(18),
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: screenHeight * 0.02,
-    fontFamily: 'Courier',
+    marginBottom: 12,
+    fontFamily: fonts.fontFamily.pixel,
     textShadowColor: 'rgba(191, 0, 255, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
   quickMatchDescription: {
     color: 'white',
-    fontSize: Math.min(14, screenWidth * 0.035),
+    fontSize: size(12),
     textAlign: 'center',
-    marginBottom: screenHeight * 0.03,
-    lineHeight: 20,
-    fontFamily: 'Courier',
-    paddingHorizontal: screenWidth * 0.02,
+    marginBottom: 16,
+    lineHeight: size(16),
+    fontFamily: fonts.fontFamily.pixel,
+    paddingHorizontal: 8,
   },
   quickMatchButton: {
     backgroundColor: '#8a20ff',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: screenHeight * 0.018,
+    paddingVertical: 12,
     borderRadius: 12,
-    marginTop: screenHeight * 0.02,
+    marginTop: 12,
     elevation: 3,
     shadowColor: '#bf00ff',
     shadowOffset: { width: 0, height: 2 },
@@ -407,10 +442,10 @@ const styles = StyleSheet.create({
   },
   quickMatchButtonText: {
     color: 'white',
-    fontSize: Math.min(18, screenWidth * 0.045),
+    fontSize: size(14),
     fontWeight: 'bold',
     marginLeft: 12,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,

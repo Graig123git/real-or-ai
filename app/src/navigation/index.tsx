@@ -112,7 +112,7 @@ const TabNavigator = () => {
               color, 
               fontSize: 10, 
               marginTop: 2,
-              fontFamily: 'Courier',
+              fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
             }}>
@@ -137,7 +137,7 @@ const TabNavigator = () => {
               color, 
               fontSize: 10, 
               marginTop: 2,
-              fontFamily: 'Courier',
+              fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
             }}>
@@ -162,7 +162,7 @@ const TabNavigator = () => {
               color, 
               fontSize: 10, 
               marginTop: 2,
-              fontFamily: 'Courier',
+              fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
             }}>
@@ -187,7 +187,7 @@ const TabNavigator = () => {
               color, 
               fontSize: 10, 
               marginTop: 2,
-              fontFamily: 'Courier',
+              fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
             }}>
@@ -212,7 +212,7 @@ const TabNavigator = () => {
               color, 
               fontSize: 10, 
               marginTop: 2,
-              fontFamily: 'Courier',
+              fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
             }}>
