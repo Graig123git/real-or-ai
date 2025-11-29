@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.neonPurple[500],
     textAlign: 'center',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: theme.typography.fontFamily.pixel,
   },
   closeButton: {
     position: 'absolute',
@@ -135,14 +135,14 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.xl,
     color: 'white',
     fontWeight: 'bold',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: theme.typography.fontFamily.pixel,
   },
   description: {
     fontSize: theme.typography.fontSize.base,
     color: 'white',
     marginBottom: theme.spacing[5],
     textAlign: 'center',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: theme.typography.fontFamily.pixel,
   },
   timer: {
     fontSize: theme.typography.fontSize['2xl'],
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing[5],
     textAlign: 'center',
     letterSpacing: 1,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: theme.typography.fontFamily.pixel,
   },
   rewardContainer: {
     alignItems: 'center',
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     marginBottom: theme.spacing[4],
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: theme.typography.fontFamily.pixel,
   },
   claimButton: {
     width: '90%',
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     letterSpacing: 0.5,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: theme.typography.fontFamily.pixel,
   },
 });
 

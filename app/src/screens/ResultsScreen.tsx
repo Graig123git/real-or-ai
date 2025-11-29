@@ -10,6 +10,7 @@ import {
   StatusBar
 } from 'react-native';
 import theme from '../theme';
+import fonts from '../theme/fonts';
 
 interface ResultsScreenProps {
   route: {
@@ -182,14 +183,14 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: 'white',
     fontSize: 18,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   headerTitle: {
     color: 'white',
     fontSize: 24,
     fontWeight: '600',
     letterSpacing: 1,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   profileSection: {
     alignItems: 'center',
@@ -218,19 +219,19 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 32,
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   correctText: {
     color: 'white',
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 8,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   messageText: {
     color: 'white',
     fontSize: 18,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   statsRow: {
     flexDirection: 'row',
@@ -263,26 +264,26 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     marginBottom: 8,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   xpValue: {
     color: '#4dff88', // Green
     fontSize: 36,
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   streakValue: {
     color: '#8a2be2', // Purple
     fontSize: 36,
     fontWeight: 'bold',
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   streakLabel: {
     color: '#8a2be2', // Purple
     fontSize: 18,
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   bonusCard: {
     backgroundColor: '#222222',
@@ -317,14 +318,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     marginBottom: 4,
   },
   bonusValue: {
     color: '#4dff88', // Green
     fontSize: 28,
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   buttonContainer: {
     padding: 16,
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   secondaryButton: {
     borderWidth: 1,
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: 'white',
     fontSize: 18,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
 });
 

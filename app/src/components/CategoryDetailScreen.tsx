@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import fonts from '../theme/fonts';
 
 interface CategoryDetailScreenProps {
   category: {
@@ -127,13 +128,14 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: 'white',
     fontSize: 18,
+    fontFamily: fonts.fontFamily.pixel,
   },
   headerTitle: {
     color: 'white',
     fontSize: 20,
     fontWeight: '400',
     letterSpacing: 2,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
   headerSpacer: {
     width: 32,
@@ -154,14 +156,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 2,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     lineHeight: 40,
   },
   instructionText: {
     color: '#4caf50',
     fontSize: 16,
     textAlign: 'center',
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
     letterSpacing: 1,
     fontWeight: '400',
     marginBottom: 40,
@@ -221,6 +223,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 24,
     marginLeft: 4,
+    fontFamily: fonts.fontFamily.pixel,
   },
   buttonContainer: {
     paddingHorizontal: 20,
@@ -246,7 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
-    fontFamily: 'Courier',
+    fontFamily: fonts.fontFamily.pixel,
   },
 });
 

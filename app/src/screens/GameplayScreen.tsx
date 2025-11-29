@@ -14,7 +14,9 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Audio } from 'expo-av';
 import theme from '../theme';
+import fonts from '../theme/fonts';
 
 // Game level definition
 interface GameLevel {
@@ -114,6 +116,66 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route, navigation }) =>
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [showClue, setShowClue] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(10);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Sound references
+  const correctSoundRef = useRef<Audio.Sound | null>(null);
+  const wrongSoundRef = useRef<Audio.Sound | null>(null);
+  const timeoutSoundRef = useRef<Audio.Sound | null>(null);
+  
+  // Load sounds
+  useEffect(() => {
+    const loadSounds = async () => {
+      try {
+        // Using short sound URLs that are more likely to be accessible
+        const { sound: correctSound } = await Audio.Sound.createAsync(
+          { uri: 'https://soundbible.com/mp3/Pling-KevanGC-1485374730.mp3' }
+        );
+        correctSoundRef.current = correctSound;
+        
+        const { sound: wrongSound } = await Audio.Sound.createAsync(
+          { uri: 'https://soundbible.com/mp3/Error-SoundBible.com-1746896619.mp3' }
+        );
+        wrongSoundRef.current = wrongSound;
+        
+        const { sound: timeoutSound } = await Audio.Sound.createAsync(
+          { uri: 'https://soundbible.com/mp3/Beep-SoundBible.com-923660219.mp3' }
+        );
+        timeoutSoundRef.current = timeoutSound;
+      } catch (error) {
+        console.error('Error loading sounds:', error);
+      }
+    };
+    
+    loadSounds();
+    
+    // Unload sounds when component unmounts
+    return () => {
+      if (correctSoundRef.current) {
+        correctSoundRef.current.unloadAsync();
+      }
+      if (wrongSoundRef.current) {
+        wrongSoundRef.current.unloadAsync();
+      }
+      if (timeoutSoundRef.current) {
+        timeoutSoundRef.current.unloadAsync();
+      }
+    };
+  }, []);
+  
+  // Play sound function
+  const playSound = async (soundRef: React.MutableRefObject<Audio.Sound | null>) => {
+    try {
+      if (soundRef.current) {
+        await soundRef.current.stopAsync();
+        await soundRef.current.setPositionAsync(0);
+        await soundRef.current.playAsync();
+      }
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
+  };
   
   // Animation refs
   const cardScale = useRef(new Animated.Value(1)).current;
@@ -127,8 +189,59 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route, navigation }) =>
   const level = gameLevels[currentLevel];
   const totalLevels = gameLevels.length;
   
+  // Timer functionality
+  useEffect(() => {
+    // Reset timer when level changes
+    setTimeRemaining(10);
+    
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    // Start a new timer
+    timerRef.current = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          // Time's up - clear interval and move to next level
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+          }
+          
+          // Play timeout sound
+          playSound(timeoutSoundRef);
+          
+          // Add a small delay before moving to next level
+          setTimeout(() => {
+            nextLevel();
+          }, 300);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    // Clean up timer when component unmounts
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [currentLevel]);
+  
+  // Clear timer when user makes a choice
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+  
   // Handle real choice
   const handleRealChoice = () => {
+    // Clear the timer
+    clearTimer();
+    
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const correct = level.isReal === true;
     processAnswer(correct);
@@ -154,6 +267,9 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route, navigation }) =>
   
   // Handle AI choice
   const handleAIChoice = () => {
+    // Clear the timer
+    clearTimer();
+    
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const correct = level.isReal === false;
     processAnswer(correct);
@@ -179,6 +295,13 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route, navigation }) =>
   
   // Process answer
   const processAnswer = (correct: boolean) => {
+    // Play the appropriate sound
+    if (correct) {
+      playSound(correctSoundRef);
+    } else {
+      playSound(wrongSoundRef);
+    }
+    
     // Calculate XP change
     const xpChange = correct ? 25 : -10;
     
@@ -369,6 +492,18 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route, navigation }) =>
                 <Text style={styles.matchText}>Match {level.confidence}%</Text>
               </View>
               
+              {/* Timer */}
+              <View style={styles.timerContainer}>
+                <Text 
+                  style={[
+                    styles.timerText,
+                    timeRemaining <= 3 && styles.timerWarning
+                  ]}
+                >
+                  {timeRemaining}s
+                </Text>
+              </View>
+              
               {/* Image info */}
               <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.9)']}
@@ -411,19 +546,19 @@ const GameplayScreen: React.FC<GameplayScreenProps> = ({ route, navigation }) =>
             {/* Bottom row (Clue and Help) */}
             <View style={styles.bottomButtonsRow}>
               <TouchableOpacity 
-                style={[styles.circleButton, styles.clueButton]}
-                onPress={handleAIChoice}
+                style={[styles.circleButton, styles.realButton]}
+                onPress={handleRealChoice}
               >
-                <Text style={styles.buttonIcon}>💡</Text>
-                <Text style={styles.buttonLabel}>Clue</Text>
+                <Text style={styles.buttonIcon}>✓</Text>
+                <Text style={styles.buttonLabel}>Real</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.circleButton, styles.helpButton]}
-                onPress={handleRealChoice}
+                style={[styles.circleButton, styles.aiButton]}
+                onPress={handleAIChoice}
               >
-                <Text style={styles.buttonIcon}>❓</Text>
-                <Text style={styles.buttonLabel}>Help</Text>
+                <Text style={styles.buttonIcon}>🤖</Text>
+                <Text style={styles.buttonLabel}>AI</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -508,7 +643,7 @@ const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000', // Pure black background
+    backgroundColor: '#000000',
     overflow: 'hidden',
   },
   safeArea: {
@@ -530,7 +665,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#8a2be2', // Purple border
+    borderColor: '#8a2be2',
   },
   profileInfo: {
     marginLeft: 12,
@@ -539,24 +674,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   locationText: {
     color: '#AAAAAA',
     fontSize: 12,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   searchButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // More subtle
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   searchIcon: {
     fontSize: 18,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   content: {
     flex: 1,
@@ -592,11 +727,30 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     zIndex: 1,
   },
+  timerContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    zIndex: 1,
+  },
+  timerText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  timerWarning: {
+    color: '#ff4d4d',
+  },
   matchText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   cardGradient: {
     position: 'absolute',
@@ -618,7 +772,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   cardLocation: {
     color: 'rgba(255, 255, 255, 0.9)',
@@ -626,7 +780,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   paginationContainer: {
     position: 'absolute',
@@ -645,12 +799,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: '#8a2be2', // Purple
+    backgroundColor: '#8a2be2',
     width: 12,
     height: 12,
     borderRadius: 6,
   },
-  // Triangle layout
   triangleContainer: {
     height: '25%',
     alignItems: 'center',
@@ -678,25 +831,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  clueButton: {
-    backgroundColor: '#4dff88', // Green
-    marginRight: 60, // Space between bottom buttons
+  realButton: {
+    backgroundColor: '#4dff88',
+    marginRight: 60,
     position: 'relative',
   },
   guessButton: {
-    backgroundColor: '#8a2be2', // Purple
+    backgroundColor: '#8a2be2',
     position: 'relative',
   },
-  helpButton: {
-    backgroundColor: '#4dff88', // Green
-    marginLeft: 60, // Space between bottom buttons
+  aiButton: {
+    backgroundColor: '#8a2be2',
+    marginLeft: 60,
     position: 'relative',
   },
   buttonIcon: {
     fontSize: 24,
     color: 'white',
     fontWeight: 'bold',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   buttonLabel: {
     position: 'absolute',
@@ -704,23 +857,31 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   feedbackOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   clueContainer: {
-    backgroundColor: 'rgba(138, 43, 226, 0.9)', // Purple
+    backgroundColor: 'rgba(138, 43, 226, 0.9)',
     borderRadius: 16,
     padding: 20,
     width: '80%',
@@ -738,14 +899,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   clueText: {
     color: 'white',
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   feedbackContainer: {
     position: 'absolute',
@@ -784,12 +945,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   correctIcon: {
-    backgroundColor: '#9d4eff', // Purple
+    backgroundColor: '#9d4eff',
     borderWidth: 2,
     borderColor: '#b580ff',
   },
   incorrectIcon: {
-    backgroundColor: '#ff4d4d', // Red
+    backgroundColor: '#ff4d4d',
     borderWidth: 2,
     borderColor: '#ff8080',
   },
@@ -797,7 +958,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 32,
     fontWeight: 'bold',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   feedbackText: {
     color: 'white',
@@ -805,33 +966,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   xpText: {
     color: '#AAAAAA',
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 5,
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   xpAmount: {
     fontSize: 36,
     fontWeight: 'bold',
     textAlign: 'center',
-    fontFamily: theme.typography.fontFamily.courier,
+    fontFamily: fonts.fontFamily.pixel,
   },
   xpGained: {
-    color: '#20ff8a', // Green
+    color: '#20ff8a',
   },
   xpLost: {
-    color: '#ff4d4d', // Red
-  },
-  streakText: {
-    color: 'white',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 4,
-    fontFamily: theme.typography.fontFamily.courier,
+    color: '#ff4d4d',
   },
 });
 
