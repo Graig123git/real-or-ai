@@ -1,0 +1,42 @@
+type User @aws_auth(cognito_groups: ["Users"]) {
+  id: ID!
+  email: String!
+  name: String!
+  avatarUrl: String
+  level: Int!
+  xp: Int!
+  coins: Int!
+  country: String
+  createdAt: AWSTimestamp!
+}
+
+type Query {
+  getUser(id: ID!): User @aws_auth(cognito_groups: ["Users"])
+  listUsers: [User] @aws_auth(cognito_groups: ["Users"])
+}
+
+type Mutation {
+  createUser(
+    email: String!
+    name: String!
+    country: String
+  ): User @aws_auth(cognito_groups: ["Users"])
+  
+  updateUser(
+    id: ID!
+    name: String
+    avatarUrl: String
+    country: String
+  ): User @aws_auth(cognito_groups: ["Users"])
+}
+
+type Subscription {
+  onCreateUser: User @aws_auth(cognito_groups: ["Users"])
+  onUpdateUser(id: ID!): User @aws_auth(cognito_groups: ["Users"])
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

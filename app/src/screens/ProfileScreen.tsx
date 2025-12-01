@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Dimensions, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import { SvgXml } from 'react-native-svg';
 import fonts from '../theme/fonts';
+import useAuthStore from '../state/authStore';
+import LoadingOverlay from '../components/LoadingOverlay';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Profile'>;
 
@@ -36,6 +38,12 @@ const bellIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xm
 const emailIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M22 6L12 13L2 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const logoutIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="#bf00ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 17L21 12L16 7" stroke="#bf00ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M21 12H9" stroke="#bf00ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
 // Get screen dimensions for responsive layout
@@ -91,8 +99,10 @@ const CoinPackOption = ({
 
 const ProfileScreen = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const { signOut } = useAuthStore();
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   // Mock user data
   const user = {
@@ -102,8 +112,47 @@ const ProfileScreen = () => {
     isPro: false,
   };
   
+  // Handle logout
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            try {
+              // Show loading overlay
+              setIsLoggingOut(true);
+              
+              // Add a small delay to ensure the loading overlay is visible
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
+              // Perform logout
+              await signOut();
+              
+              // The Navigation component will automatically switch to AuthStack
+              console.log('User logged out successfully');
+            } catch (error) {
+              // Hide loading overlay
+              setIsLoggingOut(false);
+              console.error('Error logging out:', error);
+              Alert.alert('Logout Failed', 'An error occurred while logging out. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+  
   return (
     <View style={styles.container}>
+      {/* Loading Overlay */}
+      <LoadingOverlay visible={isLoggingOut} />
       {/* Header */}
       <View style={styles.header}>
         <View style={{ width: 24 }} />
@@ -250,6 +299,17 @@ const ProfileScreen = () => {
             />
           </View>
         </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <View style={styles.logoutButtonContent}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+            <SvgXml xml={logoutIcon} width={18} height={18} />
+          </View>
+        </TouchableOpacity>
 
         {/* Danger Zone Section */}
         <View style={styles.dangerZoneCard}>
@@ -730,6 +790,27 @@ const styles = StyleSheet.create({
     fontSize: size(14),
     fontWeight: 'bold',
     fontFamily: fonts.fontFamily.pixel,
+  },
+  logoutButton: {
+    backgroundColor: '#1c1c1e',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 6,
+    width: '99%',
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: '#bf00ff',
+    fontSize: size(16),
+    fontWeight: 'bold',
+    fontFamily: fonts.fontFamily.pixel,
+    marginRight: 10,
+  },
+  logoutButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

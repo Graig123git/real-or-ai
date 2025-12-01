@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SvgXml } from 'react-native-svg';
 import { View, Text } from 'react-native';
+import { useAuth } from '../state/AuthContext';
 
 // Import screens
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import ConfirmSignUpScreen from '../screens/ConfirmSignUpScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
 import AchievementScreen from '../screens/AchievementScreen';
@@ -60,7 +63,17 @@ export type TabParamList = {
 export type RootStackParamList = {
   Splash: undefined;
   Login: undefined;
-  Register: undefined;
+  Register: {
+    email?: string;
+    confirmationRequired?: boolean;
+  } | undefined;
+  // Keep the type definition for TypeScript compatibility
+  ConfirmSignUp: {
+    email?: string;
+  } | undefined;
+  ForgotPassword: {
+    email?: string;
+  } | undefined;
   MainTabs: undefined;
   Gameplay: {
     category: string;
@@ -234,27 +247,71 @@ const TabNavigator = () => {
   );
 };
 
-// Create the stack navigator
-const Stack = createStackNavigator<RootStackParamList>();
+// Create the stack navigators
+const AuthStack = createStackNavigator<RootStackParamList>();
+const AppStack = createStackNavigator<RootStackParamList>();
 
-// Main Navigation component
-const Navigation = () => {
+// Auth Stack Navigator component
+const AuthStackNavigator = () => {
   return (
-    <Stack.Navigator 
-      initialRouteName="Splash"
+    <AuthStack.Navigator 
+      initialRouteName="Login"
       screenOptions={{
         headerShown: false,
         cardStyle: { backgroundColor: '#121212' }
       }}
     >
-      <Stack.Screen name="Splash" component={SplashScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="MainTabs" component={TabNavigator} />
-      <Stack.Screen name="Gameplay" component={GameplayScreen} />
-      <Stack.Screen name="Results" component={ResultsScreen} />
-    </Stack.Navigator>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Register" component={RegisterScreen} />
+      <AuthStack.Screen name="ConfirmSignUp" component={ConfirmSignUpScreen} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+    </AuthStack.Navigator>
   );
+};
+
+// App Stack Navigator component
+const AppStackNavigator = () => {
+  return (
+    <AppStack.Navigator 
+      initialRouteName="MainTabs"
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: '#121212' }
+      }}
+    >
+      <AppStack.Screen name="MainTabs" component={TabNavigator} />
+      <AppStack.Screen name="Gameplay" component={GameplayScreen} />
+      <AppStack.Screen name="Results" component={ResultsScreen} />
+    </AppStack.Navigator>
+  );
+};
+
+// Main Navigation component
+const Navigation = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [initializing, setInitializing] = useState(true);
+  
+  // Only show splash screen on initial app load
+  useEffect(() => {
+    // Set initializing to false after a short delay
+    const timer = setTimeout(() => {
+      setInitializing(false);
+    }, 2000); // 2 seconds for splash screen
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Show splash screen only during initial app load
+  if (initializing) {
+    return (
+      <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+        <AuthStack.Screen name="Splash" component={SplashScreen} />
+      </AuthStack.Navigator>
+    );
+  }
+  
+  // Render the appropriate stack based on authentication state
+  return isAuthenticated ? <AppStackNavigator /> : <AuthStackNavigator />;
 };
 
 export default Navigation;

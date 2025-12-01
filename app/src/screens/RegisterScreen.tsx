@@ -1,20 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
-import theme from '../theme';
 import fonts from '../theme/fonts';
+import useAuthStore from '../state/authStore';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
+type RegisterScreenRouteProp = RouteProp<RootStackParamList, 'Register'>;
 
 const RegisterScreen = () => {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const route = useRoute<RegisterScreenRouteProp>();
+  const { signUp, isLoading } = useAuthStore();
+  
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  
+  // Set initial email from route params if available
+  useEffect(() => {
+    if (route.params?.email) {
+      setEmail(route.params.email);
+    }
+  }, [route.params]);
+  
+  const handleSignUp = async () => {
+    // Validate inputs
+    if (!fullName.trim()) {
+      Alert.alert('Error', 'Please enter your full name');
+      return;
+    }
+    
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email');
+      return;
+    }
+    
+    if (!password.trim()) {
+      Alert.alert('Error', 'Please enter a password');
+      return;
+    }
+    
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters long');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+    
+    if (!agreeToTerms) {
+      Alert.alert('Error', 'You must agree to the terms and conditions');
+      return;
+    }
+    
+    try {
+      const result = await signUp(email, password, fullName);
+      
+      // Check if sign-up is complete or requires confirmation
+      if (result && result.isSignUpComplete === false && result.nextStep) {
+        console.log('Next step required after sign-up:', result.nextStep);
+        
+        // Temporarily removed confirmation flow
+        Alert.alert(
+          'Registration Initiated',
+          'Your registration has been initiated. Confirmation flow will be added back later.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      
+      // If no confirmation required, show success message
+      Alert.alert(
+        'Registration Successful', 
+        'Your account has been created successfully.',
+        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+      );
+    } catch (error) {
+      Alert.alert('Registration Failed', error instanceof Error ? error.message : 'An error occurred during registration.');
+    }
+  };
 
   return (
     <View style={styles.registerContainer}>
@@ -65,6 +135,7 @@ const RegisterScreen = () => {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
+              editable={!route.params?.email} // Make email non-editable if provided in route params
             />
           </View>
 
@@ -116,13 +187,19 @@ const RegisterScreen = () => {
         <TouchableOpacity 
           style={[
             styles.signUpButton, 
-            !agreeToTerms && styles.signUpButtonDisabled
+            (!agreeToTerms || isLoading) && styles.signUpButtonDisabled
           ]}
-          onPress={() => agreeToTerms && navigation.navigate('MainTabs')}
-          disabled={!agreeToTerms}
+          onPress={handleSignUp}
+          disabled={!agreeToTerms || isLoading}
         >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
-          <Text style={styles.signUpButtonIcon}>→</Text>
+          {isLoading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <>
+              <Text style={styles.signUpButtonText}>Sign Up</Text>
+              <Text style={styles.signUpButtonIcon}>→</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </View>

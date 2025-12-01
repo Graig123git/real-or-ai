@@ -5,14 +5,17 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import theme from '../theme';
 import fonts from '../theme/fonts';
+import { useAuth } from '../state/AuthContext';
 
 type SplashScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Splash'>;
 
 const SplashScreen = () => {
   const navigation = useNavigation<SplashScreenNavigationProp>();
+  const { isAuthenticated, isLoading } = useAuth();
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const [showHuman, setShowHuman] = useState(true);
+  const [animationComplete, setAnimationComplete] = useState(false);
   const iconAnimation = useRef(new Animated.Value(0)).current;
   const fullText = 'Can you spot the fake?';
   
@@ -34,16 +37,27 @@ const SplashScreen = () => {
         i++;
       } else {
         clearInterval(typingInterval);
-        
-        // Auto-navigate to Login screen after typing is complete and a short delay
-        setTimeout(() => {
-          navigation.navigate('Login');
-        }, 1500); // Wait 1.5 seconds after typing completes
+        setAnimationComplete(true);
       }
     }, 30); // Even faster typing
     
     return () => clearInterval(typingInterval);
-  }, [navigation]);
+  }, []);
+  
+  // Navigate based on authentication state once animation is complete
+  useEffect(() => {
+    if (animationComplete && !isLoading) {
+      const timer = setTimeout(() => {
+        if (isAuthenticated) {
+          navigation.navigate('MainTabs');
+        } else {
+          navigation.navigate('Login');
+        }
+      }, 1500); // Wait 1.5 seconds after typing completes
+      
+      return () => clearTimeout(timer);
+    }
+  }, [animationComplete, isLoading, isAuthenticated, navigation]);
   
   // Icon animation effect
   useEffect(() => {

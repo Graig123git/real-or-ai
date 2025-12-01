@@ -1,31 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
-import theme from '../theme';
 import fonts from '../theme/fonts';
+import useAuthStore from '../state/authStore';
+import LoadingOverlay from '../components/LoadingOverlay';
+
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { signInWithEmail, signInWithGoogle, signInWithApple, isLoading, error, initialize } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const [typingComplete, setTypingComplete] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const fullText = 'Welcome,\nChallenger!';
-  
+
+  // Handle login logic in a separate function
+  const handleLogin = async () => {
+    try {
+      // Show loading overlay
+      setIsAuthenticating(true);
+
+      // Add a small delay to ensure the loading overlay is visible
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const result = await signInWithEmail(email, password);
+
+      // Check if there's a next step required
+      if (result && result.nextStep) {
+        // Hide loading overlay
+        setIsAuthenticating(false);
+
+        console.log('Handling next step:', result.nextStep);
+
+        // Handle different next steps
+        if (result.nextStep.signInStep === 'CONFIRM_SIGN_UP') {
+          // Navigate to confirmation screen
+          navigation.navigate('ConfirmSignUp', { email });
+          return;
+        } else if (result.nextStep.signInStep === 'RESET_PASSWORD') {
+          // Navigate to reset password screen
+          navigation.navigate('ForgotPassword', { email });
+          return;
+        }
+        return;
+      }
+
+    } catch (error) {
+      // Hide loading overlay
+      setIsAuthenticating(false);
+      Alert.alert('Login Failed', error instanceof Error ? error.message : 'Please check your credentials and try again.');
+    }
+  };
+
   useEffect(() => {
     // Cursor blinking effect
     const cursorInterval = setInterval(() => {
       setShowCursor(prev => !prev);
     }, 500);
-    
+
     return () => clearInterval(cursorInterval);
   }, []);
-  
+
   useEffect(() => {
     // Start typing animation
     let i = 0;
@@ -38,12 +80,14 @@ const LoginScreen = () => {
         setTypingComplete(true);
       }
     }, 50); // Faster typing speed
-    
+
     return () => clearInterval(typingInterval);
   }, []);
 
   return (
     <View style={styles.loginContainer}>
+      {/* Loading Overlay */}
+      <LoadingOverlay visible={isAuthenticating} />
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Sign Up/Login</Text>
@@ -73,7 +117,7 @@ const LoginScreen = () => {
               autoCapitalize="none"
             />
           </View>
-          
+
           <View style={styles.inputWrapper}>
             <Text style={styles.inputIcon}>🔒</Text>
             <TextInput
@@ -88,15 +132,19 @@ const LoginScreen = () => {
         </View>
 
         {/* Login Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
-            styles.emailButton, 
-            (!email.trim() || !password.trim()) && styles.loginButtonDisabled
+            styles.emailButton,
+            (!email.trim() || !password.trim() || isAuthenticating) && styles.loginButtonDisabled
           ]}
-          onPress={() => navigation.navigate('MainTabs')}
-          disabled={!email.trim() || !password.trim()}
+          onPress={handleLogin}
+          disabled={!email.trim() || !password.trim() || isAuthenticating}
         >
-          <Text style={styles.emailButtonText}>Login</Text>
+          {isAuthenticating ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text style={styles.emailButtonText}>Login</Text>
+          )}
         </TouchableOpacity>
 
         {/* Divider */}
@@ -109,9 +157,17 @@ const LoginScreen = () => {
         {/* Social Login Buttons */}
         <View style={styles.socialButtonsContainer}>
           {/* Google Button */}
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => navigation.navigate('MainTabs')}
+          <TouchableOpacity
+            style={[styles.socialButton, isLoading && styles.loginButtonDisabled]}
+            onPress={async () => {
+              try {
+                await signInWithGoogle();
+                // Auth state will be updated automatically
+              } catch (error) {
+                Alert.alert('Google Login Failed', error instanceof Error ? error.message : 'An error occurred during Google sign in.');
+              }
+            }}
+            disabled={isLoading}
           >
             <View style={styles.socialIconContainer}>
               <Text>G</Text>
@@ -120,9 +176,17 @@ const LoginScreen = () => {
           </TouchableOpacity>
 
           {/* Apple Button */}
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => navigation.navigate('MainTabs')}
+          <TouchableOpacity
+            style={[styles.socialButton, isLoading && styles.loginButtonDisabled]}
+            onPress={async () => {
+              try {
+                await signInWithApple();
+                // Auth state will be updated automatically
+              } catch (error) {
+                Alert.alert('Apple Login Failed', error instanceof Error ? error.message : 'An error occurred during Apple sign in.');
+              }
+            }}
+            disabled={isLoading}
           >
             <View style={styles.socialIconContainer}>
               <Text>🍎</Text>
@@ -130,17 +194,30 @@ const LoginScreen = () => {
             <Text style={styles.socialButtonText}>Continue with Apple</Text>
           </TouchableOpacity>
 
-          {/* Guest Button */}
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => navigation.navigate('MainTabs')}
-          >
-            <View style={styles.socialIconContainer}>
-              <Text>👤</Text>
-            </View>
-            <Text style={styles.socialButtonText}>Continue as Guest</Text>
-          </TouchableOpacity>
+          {/* Remove Guest Button as per handbook requirements */}
         </View>
+
+        {/* Forgot Password Link */}
+        <TouchableOpacity
+          style={styles.forgotPasswordContainer}
+          onPress={() => {
+            console.log('Navigating to ForgotPassword screen');
+            navigation.navigate('ForgotPassword');
+          }}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
+
+        {/* Test Button for ConfirmSignUp */}
+        <TouchableOpacity
+          style={styles.forgotPasswordContainer}
+          onPress={() => {
+            console.log('Test: Navigating to ConfirmSignUp screen');
+            navigation.navigate('ConfirmSignUp', { email });
+          }}
+        >
+          <Text style={styles.forgotPasswordText}>Test Confirm Screen</Text>
+        </TouchableOpacity>
 
         {/* Sign Up Link */}
         <View style={styles.signUpContainer}>
@@ -308,6 +385,16 @@ const styles = StyleSheet.create({
   signUpLink: {
     color: '#8a20ff',
     fontWeight: 'bold',
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  forgotPasswordContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  forgotPasswordText: {
+    color: '#8a20ff',
+    fontSize: 14,
     fontFamily: fonts.fontFamily.pixel,
   },
 });
