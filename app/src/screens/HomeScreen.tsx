@@ -1,9 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  Animated, 
+  Easing,
+  SafeAreaView,
+  StatusBar,
+  Platform,
+  Image
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import fonts from '../theme/fonts';
+import theme from '../theme';
 import DailyChallengePopup from '../components/DailyChallengePopup';
 import ShuffleIcon from '../components/ShuffleIcon';
 import VideoIcon from '../components/VideoIcon';
@@ -25,6 +37,17 @@ const HomeScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showDetailScreen, setShowDetailScreen] = useState(false);
   
+  // User level and XP state (mock data - would come from user profile in real app)
+  const [userLevel, setUserLevel] = useState(6);
+  const [userXP, setUserXP] = useState(720); // Current XP
+  const [maxXP, setMaxXP] = useState(1000); // XP needed for next level
+  
+  // Animation values
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const categoryRotateAnim = useRef(new Animated.Value(0)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  
   // Create refs for FlipCard components
   const flipCardRefs = useRef<{[key: string]: React.RefObject<any>}>({
     images: React.createRef(),
@@ -37,9 +60,55 @@ const HomeScreen = () => {
   // State to force reset of cards
   const [resetKey, setResetKey] = useState(0);
   
+  // Start animations
   useEffect(() => {
+    // Pulse animation for category icons
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.1,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true
+        })
+      ])
+    ).start();
+    
+    // Rotation animation for mixed mode icon
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 10000,
+        easing: Easing.linear,
+        useNativeDriver: true
+      })
+    ).start();
+    
+    // Rotation animation for category icons
+    Animated.loop(
+      Animated.timing(categoryRotateAnim, {
+        toValue: 1,
+        duration: 5000, // Even faster rotation
+        easing: Easing.linear,
+        useNativeDriver: true
+      })
+    ).start();
+    
+    // Progress bar animation
+    Animated.timing(progressAnim, {
+      toValue: userXP / maxXP,
+      duration: 1000,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false
+    }).start();
+    
     // Show the daily challenge popup after a delay
-    // Use a slightly longer delay for a better user experience
     const timer = setTimeout(() => {
       setShowDailyChallenge(true);
     }, 2500); // 2.5 seconds delay
@@ -88,34 +157,55 @@ const HomeScreen = () => {
     setResetKey(prev => prev + 1);
   };
   
+  // Calculate rotation for icons
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
+  });
+  
+  const categorySpin = categoryRotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
+  });
+  
   // Use the ImageIcon component
   const renderImageIcon = () => (
-    <ImageIcon width={32} height={32} color="#9d4eff" />
+    <Animated.View style={{ transform: [{ scale: pulseAnim }, { rotate: categorySpin }] }}>
+      <ImageIcon width={32} height={32} color="#9d4eff" />
+    </Animated.View>
   );
   
   // Use the VideoIcon component
   const renderVideoIcon = () => (
-    <VideoIcon width={32} height={32} color="#20ff8a" />
+    <Animated.View style={{ transform: [{ scale: pulseAnim }, { rotate: categorySpin }] }}>
+      <VideoIcon width={32} height={32} color="#20ff8a" />
+    </Animated.View>
   );
   
   // Use the AudioIcon component
   const renderAudioIcon = () => (
-    <AudioIcon width={32} height={32} color="#9d4eff" />
+    <Animated.View style={{ transform: [{ scale: pulseAnim }, { rotate: categorySpin }] }}>
+      <AudioIcon width={32} height={32} color="#9d4eff" />
+    </Animated.View>
   );
   
   const renderTextIcon = () => (
-    <View style={{width: 32, height: 32, justifyContent: 'center', alignItems: 'center'}}>
-      <View style={{width: 22, height: 26, borderWidth: 1.5, borderColor: '#20ff8a', borderRadius: 3}}>
-        <View style={{width: 12, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 8, left: 5}} />
-        <View style={{width: 12, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 13, left: 5}} />
-        <View style={{width: 8, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 14, left: 4}} />
+    <Animated.View style={{ transform: [{ scale: pulseAnim }, { rotate: categorySpin }] }}>
+      <View style={{width: 32, height: 32, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={{width: 22, height: 26, borderWidth: 1.5, borderColor: '#20ff8a', borderRadius: 3}}>
+          <View style={{width: 12, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 8, left: 5}} />
+          <View style={{width: 12, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 13, left: 5}} />
+          <View style={{width: 8, height: 1.5, backgroundColor: '#20ff8a', position: 'absolute', top: 14, left: 4}} />
+        </View>
       </View>
-    </View>
+    </Animated.View>
   );
   
   // Use the ShuffleIcon component for Mixed Mode
   const renderMixedModeIcon = () => (
-    <ShuffleIcon width={24} height={24} color="#9d4eff" />
+    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+      <ShuffleIcon width={24} height={24} color="#9d4eff" />
+    </Animated.View>
   );
   
   // Define category data with custom icons
@@ -125,28 +215,32 @@ const HomeScreen = () => {
       title: 'Images', 
       renderIcon: renderImageIcon,
       color: '#9d4eff', // Vibrant purple
-      detailTitle: 'Space Exploration' // Example topic for this category
+      detailTitle: 'Space Exploration', // Example topic for this category
+      caption: 'Spot visual AI artifacts'
     },
     { 
       id: 'videos', 
       title: 'Videos', 
       renderIcon: renderVideoIcon,
       color: '#20ff8a', // Vibrant green
-      detailTitle: 'Wildlife Documentary'
+      detailTitle: 'Wildlife Documentary',
+      caption: 'Detect deepfakes'
     },
     { 
       id: 'audio', 
       title: 'Audio', 
       renderIcon: renderAudioIcon,
       color: '#9d4eff', // Vibrant purple
-      detailTitle: 'Music Composition'
+      detailTitle: 'Music Composition',
+      caption: 'Hear synthetic patterns'
     },
     { 
       id: 'text', 
       title: 'Text', 
       renderIcon: renderTextIcon,
       color: '#20ff8a', // Vibrant green
-      detailTitle: 'News Article'
+      detailTitle: 'News Article',
+      caption: 'Catch AI logic gaps'
     }
   ];
 
@@ -156,7 +250,8 @@ const HomeScreen = () => {
   // Render the detail screen if a category is selected
   if (showDetailScreen && selectedCategoryData) {
     return (
-      <View style={styles.homeContainer}>
+      <SafeAreaView style={styles.homeContainer}>
+        <StatusBar barStyle="light-content" backgroundColor="#000000" />
         <CategoryDetailScreen 
           category={{
             id: selectedCategoryData.id,
@@ -167,17 +262,53 @@ const HomeScreen = () => {
           onBack={handleBackFromDetail}
           onStartRound={handleStartRound}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
     <>
-      <View style={styles.homeContainer}>
-        {/* Top navigation */}
-        <View style={styles.topNav}>
-          <View style={styles.topNavSpacer}></View>
-
+      <StatusBar barStyle="light-content" backgroundColor="#121212" />
+      <SafeAreaView style={styles.homeContainer}>
+        {/* Clean, Minimal Header */}
+        <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? 50 : 16 }]}>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <View style={styles.profileIconContainer}>
+              <Image 
+                source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
+                style={styles.profileImage} 
+              />
+            </View>
+          </TouchableOpacity>
+          
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>🔥 Truth or Fake?</Text>
+            <Text style={styles.headerTagline}>Test your skills and climb the leaderboard.</Text>
+          </View>
+          
+          <View style={styles.headerSpacer} />
+        </View>
+        
+        {/* XP Progress Bar */}
+        <View style={styles.xpContainer}>
+          <View style={styles.levelInfo}>
+            <Text style={styles.levelText}>Level {userLevel}</Text>
+            <Text style={styles.xpText}>{Math.round(userXP / maxXP * 100)}% to Level {userLevel + 1}</Text>
+          </View>
+          <View style={styles.progressBarContainer}>
+            <Animated.View 
+              style={[
+                styles.progressBar, 
+                { width: progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0%', '100%']
+                }) }
+              ]} 
+            />
+          </View>
         </View>
         
         {/* Main content */}
@@ -192,38 +323,41 @@ const HomeScreen = () => {
                 activeOpacity={0.7}
               >
                 {/* Use the FlipCard component with the correct props */}
-                <FlipCard
-                  ref={flipCardRefs[category.id]}
-                  resetKey={resetKey}
-                  frontContent={
-                    <View style={styles.categoryCard}>
-                      <View style={[styles.iconContainer, { borderColor: category.color, borderWidth: 1.5, borderRadius: 12 }]}>
-                        {category.renderIcon()}
-                      </View>
-                      <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
-                    </View>
-                  }
-                  backContent={
-                    <View style={styles.categoryCard}>
-                      <View style={[styles.iconContainer, { borderColor: category.color, borderWidth: 1.5, borderRadius: 12 }]}>
-                        {category.renderIcon()}
-                      </View>
-                      <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
-                    </View>
-                  }
-                  onFlip={(isFront) => {
-                    if (!isFront && !showDetailScreen) {
-                      handleCategorySelect(category.id);
+                <View style={styles.categoryCard}>
+                  <View style={[
+                    styles.iconContainer, 
+                    { 
+                      borderColor: category.color, 
+                      borderWidth: 1.5, 
+                      borderRadius: 12,
+                      shadowColor: category.color,
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.8,
+                      shadowRadius: 5,
+                      elevation: 5
                     }
-                  }}
-                />
+                  ]}>
+                    {category.renderIcon()}
+                  </View>
+                  <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
+                  <Text style={styles.categoryCaption}>{category.caption}</Text>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
           
           {/* Mixed Mode button */}
           <TouchableOpacity 
-            style={styles.mixedModeCard}
+            style={[
+              styles.mixedModeCard,
+              {
+                shadowColor: '#9d4eff',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.5,
+                shadowRadius: 8,
+                elevation: 8
+              }
+            ]}
             onPress={() => handleCategorySelect('mixed')}
             activeOpacity={0.7}
           >
@@ -231,13 +365,16 @@ const HomeScreen = () => {
               <View style={styles.mixedModeIconContainer}>
                 {renderMixedModeIcon()}
               </View>
-              <Text style={styles.mixedModeTitle}>Mixed Mode</Text>
+              <View>
+                <Text style={styles.mixedModeTitle}>Mixed Mode</Text>
+                <Text style={styles.mixedModeCaption}>Ultimate challenge!</Text>
+              </View>
             </View>
           </TouchableOpacity>
         </View>
         
         {/* No custom bottom navigation - using React Navigation's Tab Navigator */}
-      </View>
+      </SafeAreaView>
       
       {/* Daily Challenge Popup */}
       <DailyChallengePopup 
@@ -254,6 +391,146 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
   },
+  header: {
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#222',
+  },
+  headerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#1a1a1a',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  headerGlow: {
+    position: 'absolute',
+    top: -50,
+    left: 0,
+    right: 0,
+    height: 100,
+    backgroundColor: 'rgba(157, 78, 255, 0.1)',
+    borderRadius: 100,
+    transform: [{ scaleX: 2 }],
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'ios' ? 30 : 0,
+  },
+  profileButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#1c1c1e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#9d4eff',
+    shadowColor: '#9d4eff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  profileImageGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: 'rgba(157, 78, 255, 0.5)',
+    shadowColor: '#9d4eff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+  },
+  headerTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  welcomeText: {
+    fontSize: 14,
+    color: '#9d4eff',
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 4,
+    textShadowColor: 'rgba(157, 78, 255, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 4,
+  },
+  headerSpacer: {
+    width: 36,
+    height: 36,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 4,
+  },
+  headerTagline: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  xpContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  levelInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  levelText: {
+    color: '#9d4eff',
+    fontFamily: fonts.fontFamily.pixel,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  xpText: {
+    color: '#cccccc',
+    fontFamily: fonts.fontFamily.pixel,
+    fontSize: 10,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: '#333333',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#9d4eff',
+    borderRadius: 4,
+  },
   homeContent: {
     flex: 1,
     padding: 2,
@@ -265,11 +542,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginBottom: 0,
+    paddingHorizontal: 8,
+    paddingBottom: 30, // Further reduced space for the mixed mode button
   },
   categoryCardContainer: {
-    width: '49.9%',
-    aspectRatio: 0.65, // Adjusted to find a balance in height
-    marginBottom: 2,
+    width: '48%', // Slightly narrower to ensure proper spacing
+    aspectRatio: 0.85, // Taller cards (not square)
+    marginBottom: 12, // Reduced bottom margin
   },
   categoryCard: {
     width: '100%',
@@ -279,6 +558,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#333333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   iconContainer: {
     width: 55,
@@ -293,6 +579,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     fontFamily: fonts.fontFamily.pixel,
+    marginBottom: 4,
+  },
+  categoryCaption: {
+    fontSize: 10,
+    color: '#cccccc',
+    textAlign: 'center',
+    fontFamily: fonts.fontFamily.pixel,
   },
   mixedModeCard: {
     width: '99%',
@@ -303,10 +596,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     position: 'absolute',
-    bottom: 10, // Position at bottom of screen
+    bottom: 16, // Moved up from bottom of screen
     left: 2,
     right: 2,
     alignSelf: 'center',
+    borderWidth: 1.5,
+    borderColor: '#9d4eff',
   },
   mixedModeIconContainer: {
     width: 36,
@@ -321,40 +616,14 @@ const styles = StyleSheet.create({
   mixedModeTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8a20ff',
-    textAlign: 'center',
+    color: '#9d4eff',
+    textAlign: 'left',
     fontFamily: fonts.fontFamily.pixel,
   },
-  bottomNav: {
-    flexDirection: 'row',
-    height: 60,
-    backgroundColor: '#1c1c1e',
-    borderTopWidth: 1,
-    borderTopColor: '#2c2c2e',
-    paddingBottom: 4,
-  },
-  navItem: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 8,
-    position: 'relative',
-  },
-  navIconContainer: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  activeNavText: {
-    color: '#9d4eff',
-    fontWeight: '600',
-  },
-  navText: {
-    color: '#8E8E93',
+  mixedModeCaption: {
     fontSize: 10,
-    textAlign: 'center',
+    color: '#cccccc',
+    textAlign: 'left',
     fontFamily: fonts.fontFamily.pixel,
   },
   topNav: {

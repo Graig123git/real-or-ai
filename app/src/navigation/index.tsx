@@ -102,14 +102,14 @@ const TabNavigator = () => {
           backgroundColor: '#121212',
           borderTopWidth: 1,
           borderTopColor: '#333',
-          height: 60,
+          height: 65, // Increased height
           paddingBottom: 8,
           paddingTop: 8,
           paddingHorizontal: 10,
           justifyContent: 'center',
           alignItems: 'center',
         },
-        tabBarActiveTintColor: '#bf00ff',
+        tabBarActiveTintColor: '#9d4eff', // Consistent purple color
         tabBarInactiveTintColor: 'white',
         tabBarItemStyle: {
           paddingVertical: 5,
@@ -123,21 +123,31 @@ const TabNavigator = () => {
           tabBarLabel: ({ color, focused }) => (
             <Text style={{ 
               color, 
-              fontSize: 10, 
+              fontSize: 11, 
               marginTop: 2,
               fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
+              textShadowColor: focused ? '#9d4eff' : 'transparent',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: focused ? 4 : 0,
             }}>
               Home
             </Text>
           ),
           tabBarIcon: ({ focused }) => (
-            <SvgXml 
-              xml={homeIcon.replace('fill="white"', focused ? 'fill="#bf00ff"' : 'fill="white"')} 
-              width={24} 
-              height={24} 
-            />
+            <View style={{
+              shadowColor: focused ? '#9d4eff' : 'transparent',
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: focused ? 0.8 : 0,
+              shadowRadius: focused ? 6 : 0,
+            }}>
+              <SvgXml 
+                xml={homeIcon.replace('fill="white"', focused ? 'fill="#9d4eff"' : 'fill="white"')} 
+                width={28} 
+                height={28} 
+              />
+            </View>
           ),
         }}
       />
@@ -148,21 +158,31 @@ const TabNavigator = () => {
           tabBarLabel: ({ color, focused }) => (
             <Text style={{ 
               color, 
-              fontSize: 10, 
+              fontSize: 11, 
               marginTop: 2,
               fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
+              textShadowColor: focused ? '#9d4eff' : 'transparent',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: focused ? 4 : 0,
             }}>
               Leaderboard
             </Text>
           ),
           tabBarIcon: ({ focused }) => (
-            <SvgXml 
-              xml={trophyIcon.replace('fill="white"', focused ? 'fill="#bf00ff"' : 'fill="white"')} 
-              width={24} 
-              height={24} 
-            />
+            <View style={{
+              shadowColor: focused ? '#9d4eff' : 'transparent',
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: focused ? 0.8 : 0,
+              shadowRadius: focused ? 6 : 0,
+            }}>
+              <SvgXml 
+                xml={trophyIcon.replace('fill="white"', focused ? 'fill="#9d4eff"' : 'fill="white"')} 
+                width={28} 
+                height={28} 
+              />
+            </View>
           ),
         }}
       />
@@ -173,21 +193,31 @@ const TabNavigator = () => {
           tabBarLabel: ({ color, focused }) => (
             <Text style={{ 
               color, 
-              fontSize: 10, 
+              fontSize: 11, 
               marginTop: 2,
               fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
+              textShadowColor: focused ? '#9d4eff' : 'transparent',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: focused ? 4 : 0,
             }}>
-              Achievement
+              Badges
             </Text>
           ),
           tabBarIcon: ({ focused }) => (
-            <SvgXml 
-              xml={achievementsIcon.replace('fill="#bf00ff"', focused ? 'fill="#bf00ff"' : 'fill="white"')} 
-              width={24} 
-              height={24} 
-            />
+            <View style={{
+              shadowColor: focused ? '#9d4eff' : 'transparent',
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: focused ? 0.8 : 0,
+              shadowRadius: focused ? 6 : 0,
+            }}>
+              <SvgXml 
+                xml={achievementsIcon.replace('fill="#bf00ff"', focused ? 'fill="#9d4eff"' : 'fill="white"')} 
+                width={28} 
+                height={28} 
+              />
+            </View>
           ),
         }}
       />
@@ -198,21 +228,33 @@ const TabNavigator = () => {
           tabBarLabel: ({ color, focused }) => (
             <Text style={{ 
               color, 
-              fontSize: 10, 
+              fontSize: 11, 
               marginTop: 2,
               fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
+              textShadowColor: focused ? '#9d4eff' : 'transparent',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: focused ? 4 : 0,
             }}>
-              Challenge
+              Duels
             </Text>
           ),
           tabBarIcon: ({ focused }) => {
             let modifiedIcon = challengeIcon;
             if (focused) {
-              modifiedIcon = modifiedIcon.replace(/stroke="white"/g, 'stroke="#bf00ff"');
+              modifiedIcon = modifiedIcon.replace(/stroke="white"/g, 'stroke="#9d4eff"');
             }
-            return <SvgXml xml={modifiedIcon} width={24} height={24} />;
+            return (
+              <View style={{
+                shadowColor: focused ? '#9d4eff' : 'transparent',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: focused ? 0.8 : 0,
+                shadowRadius: focused ? 6 : 0,
+              }}>
+                <SvgXml xml={modifiedIcon} width={28} height={28} />
+              </View>
+            );
           },
         }}
       />
@@ -223,11 +265,14 @@ const TabNavigator = () => {
           tabBarLabel: ({ color, focused }) => (
             <Text style={{ 
               color, 
-              fontSize: 10, 
+              fontSize: 11, 
               marginTop: 2,
               fontFamily: 'Press Start 2P',
               fontWeight: focused ? 'bold' : 'normal',
               textAlign: 'center',
+              textShadowColor: focused ? '#9d4eff' : 'transparent',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: focused ? 4 : 0,
             }}>
               Profile
             </Text>
@@ -236,10 +281,19 @@ const TabNavigator = () => {
             let modifiedIcon = profileIcon;
             if (focused) {
               modifiedIcon = modifiedIcon
-                .replace('stroke="white"', 'stroke="#bf00ff"')
-                .replace('fill="white"', 'fill="#bf00ff"');
+                .replace('stroke="white"', 'stroke="#9d4eff"')
+                .replace('fill="white"', 'fill="#9d4eff"');
             }
-            return <SvgXml xml={modifiedIcon} width={24} height={24} />;
+            return (
+              <View style={{
+                shadowColor: focused ? '#9d4eff' : 'transparent',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: focused ? 0.8 : 0,
+                shadowRadius: focused ? 6 : 0,
+              }}>
+                <SvgXml xml={modifiedIcon} width={28} height={28} />
+              </View>
+            );
           },
         }}
       />

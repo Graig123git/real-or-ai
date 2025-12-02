@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar,
+  Platform
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import fonts from '../theme/fonts';
 
@@ -53,53 +61,56 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({
   };
   
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={onBack}
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Start Round</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-      
-      <View style={styles.content}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.categoryTitle}>CRITICAL</Text>
-          <Text style={styles.categoryTitle}>THINKING</Text>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <SafeAreaView style={styles.container}>
+        {/* Header */}
+        <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? 50 : 16 }]}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={onBack}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Start Round</Text>
+          <View style={styles.headerSpacer} />
         </View>
         
-        <Text style={styles.instructionText}>
-          Prepare to unravel{'\n'}
-          the mysteries of the{'\n'}
-          mind.
-        </Text>
-        
-        <View style={styles.playButtonContainer}>
-          <View style={styles.glowEffect} />
-          <View style={styles.outerCircle}>
-            <View style={styles.middleCircle}>
-              <View style={styles.innerCircle}>
-                <Text style={styles.playIcon}>▶</Text>
+        <View style={styles.content}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.categoryTitle}>CRITICAL</Text>
+            <Text style={styles.categoryTitle}>THINKING</Text>
+          </View>
+          
+          <Text style={styles.instructionText}>
+            Prepare to unravel{'\n'}
+            the mysteries of the{'\n'}
+            mind.
+          </Text>
+          
+          <View style={styles.playButtonContainer}>
+            <View style={styles.glowEffect} />
+            <View style={styles.outerCircle}>
+              <View style={styles.middleCircle}>
+                <View style={styles.innerCircle}>
+                  <Text style={styles.playIcon}>▶</Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
-      
-      {/* Start Round Button */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.startButton}
-          onPress={handleStartRound}
-        >
-          <Text style={styles.startButtonText}>Start Round</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        
+        {/* Start Round Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.startButton}
+            onPress={handleStartRound}
+          >
+            <Text style={styles.startButtonText}>Start Round</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </>
   );
 };
 
