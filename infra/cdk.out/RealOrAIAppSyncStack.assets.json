@@ -1,0 +1,20 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "0832b76c31d03dcd25ab3527b9e6dbeb6726cef35600d46a4a5b2b53c3f5058d": {
+      "displayName": "RealOrAI-AppSync Template",
+      "source": {
+        "path": "RealOrAIAppSyncStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region-99619601": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "0832b76c31d03dcd25ab3527b9e6dbeb6726cef35600d46a4a5b2b53c3f5058d.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

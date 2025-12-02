@@ -1,0 +1,20 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "18d74a32b74b43cf403f9544ac6d9582117aa772800f8dd9f5acf463fc0f2fd6": {
+      "displayName": "RealOrAI-Cognito Template",
+      "source": {
+        "path": "RealOrAICognitoStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region-67d3c792": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "18d74a32b74b43cf403f9544ac6d9582117aa772800f8dd9f5acf463fc0f2fd6.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

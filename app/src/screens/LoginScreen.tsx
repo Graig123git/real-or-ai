@@ -1,31 +1,105 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  TextInput, 
+  ActivityIndicator, 
+  Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
-import theme from '../theme';
 import fonts from '../theme/fonts';
+import useAuthStore from '../state/authStore';
+import LoadingOverlay from '../components/LoadingOverlay';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { signInWithEmail, signInWithGoogle, signInWithApple, isLoading, error, initialize } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const [typingComplete, setTypingComplete] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const fullText = 'Welcome,\nChallenger!';
   
+  // Refs for input fields
+  const emailInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<TextInput>(null);
+
+  // Handle login logic in a separate function
+  const handleLogin = async () => {
+    // Dismiss keyboard
+    Keyboard.dismiss();
+    
+    try {
+      // Show loading overlay
+      setIsAuthenticating(true);
+
+      // Add a small delay to ensure the loading overlay is visible
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const result = await signInWithEmail(email, password);
+
+      // Check if there's a next step required
+      if (result && result.nextStep) {
+        // Hide loading overlay
+        setIsAuthenticating(false);
+
+        console.log('Handling next step:', result.nextStep);
+
+        // Handle different next steps
+        if (result.nextStep.signInStep === 'CONFIRM_SIGN_UP') {
+          // Navigate to confirmation screen
+          navigation.navigate('ConfirmSignUp', { email });
+          return;
+        } else if (result.nextStep.signInStep === 'RESET_PASSWORD') {
+          // Navigate to reset password screen
+          navigation.navigate('ForgotPassword', { email });
+          return;
+        }
+        return;
+      }
+      
+      // If no next step, the user is fully signed in
+      console.log('Login successful, user is authenticated');
+      
+      // Reinitialize auth state to ensure it's updated correctly
+      await initialize();
+      
+      // Explicitly navigate to MainTabs to ensure proper navigation
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      });
+
+      // Note: We don't need to hide the loading overlay here as the navigation
+      // will change to the main app, and this component will be unmounted
+    } catch (error) {
+      // Hide loading overlay
+      setIsAuthenticating(false);
+      Alert.alert('Login Failed', error instanceof Error ? error.message : 'Please check your credentials and try again.');
+    }
+  };
+
   useEffect(() => {
     // Cursor blinking effect
     const cursorInterval = setInterval(() => {
       setShowCursor(prev => !prev);
     }, 500);
-    
+
     return () => clearInterval(cursorInterval);
   }, []);
-  
+
   useEffect(() => {
     // Start typing animation
     let i = 0;
@@ -38,118 +112,170 @@ const LoginScreen = () => {
         setTypingComplete(true);
       }
     }, 50); // Faster typing speed
-    
+
     return () => clearInterval(typingInterval);
   }, []);
 
   return (
-    <View style={styles.loginContainer}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Sign Up/Login</Text>
-      </View>
-
-      <View style={styles.loginContent}>
-        {/* Welcome Text */}
-        <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeTitle}>
-            {displayText}
-            {showCursor && <Text style={styles.cursor}>|</Text>}
-          </Text>
-          <Text style={styles.welcomeSubtitle}>Prove your discernment.</Text>
-        </View>
-
-        {/* Email and Password Inputs */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>✉️</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              placeholderTextColor="#8E8E93"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.loginContainer}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.loginContainer}>
+          {/* Loading Overlay */}
+          <LoadingOverlay visible={isAuthenticating} />
           
-          <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>🔒</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="#8E8E93"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerText}>Sign Up/Login</Text>
+          </View>
+
+          <View style={styles.loginContent}>
+            {/* Welcome Text */}
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeTitle}>
+                {displayText}
+                {showCursor && <Text style={styles.cursor}>|</Text>}
+              </Text>
+              <Text style={styles.welcomeSubtitle}>Prove your discernment.</Text>
+            </View>
+
+            {/* Email and Password Inputs */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputIcon}>✉️</Text>
+                <TextInput
+                  ref={emailInputRef}
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#8E8E93"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => passwordInputRef.current?.focus()}
+                  blurOnSubmit={false}
+                />
+              </View>
+
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputIcon}>🔒</Text>
+                <TextInput
+                  ref={passwordInputRef}
+                  style={styles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor="#8E8E93"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
+                  blurOnSubmit={true}
+                />
+              </View>
+            </View>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              style={[
+                styles.emailButton,
+                (!email.trim() || !password.trim() || isAuthenticating) && styles.loginButtonDisabled
+              ]}
+              onPress={handleLogin}
+              disabled={!email.trim() || !password.trim() || isAuthenticating}
+            >
+              {isAuthenticating ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text style={styles.emailButtonText}>Login</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Social Login Buttons */}
+            <View style={styles.socialButtonsContainer}>
+              {/* Google Button */}
+              <TouchableOpacity
+                style={[styles.socialButton, isLoading && styles.loginButtonDisabled]}
+                onPress={async () => {
+                  Keyboard.dismiss();
+                  try {
+                    await signInWithGoogle();
+                    // Auth state will be updated automatically
+                  } catch (error) {
+                    Alert.alert('Google Login Failed', error instanceof Error ? error.message : 'An error occurred during Google sign in.');
+                  }
+                }}
+                disabled={isLoading}
+              >
+                <View style={styles.socialIconContainer}>
+                  <Text>G</Text>
+                </View>
+                <Text style={styles.socialButtonText}>Continue with Google</Text>
+              </TouchableOpacity>
+
+              {/* Apple Button */}
+              <TouchableOpacity
+                style={[styles.socialButton, isLoading && styles.loginButtonDisabled]}
+                onPress={async () => {
+                  Keyboard.dismiss();
+                  try {
+                    await signInWithApple();
+                    // Auth state will be updated automatically
+                  } catch (error) {
+                    Alert.alert('Apple Login Failed', error instanceof Error ? error.message : 'An error occurred during Apple sign in.');
+                  }
+                }}
+                disabled={isLoading}
+              >
+                <View style={styles.socialIconContainer}>
+                  <Text>🍎</Text>
+                </View>
+                <Text style={styles.socialButtonText}>Continue with Apple</Text>
+              </TouchableOpacity>
+
+              {/* Remove Guest Button as per handbook requirements */}
+            </View>
+
+            {/* Forgot Password Link */}
+            <TouchableOpacity
+              style={styles.forgotPasswordContainer}
+              onPress={() => {
+                Keyboard.dismiss();
+                console.log('Navigating to ForgotPassword screen');
+                navigation.navigate('ForgotPassword');
+              }}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            {/* Sign Up Link */}
+            <View style={styles.signUpContainer}>
+              <Text style={styles.signUpText}>
+                Don't have an account?{' '}
+                <Text 
+                  style={styles.signUpLink} 
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    navigation.navigate('Register');
+                  }}
+                >
+                  Sign Up
+                </Text>
+              </Text>
+            </View>
           </View>
         </View>
-
-        {/* Login Button */}
-        <TouchableOpacity 
-          style={[
-            styles.emailButton, 
-            (!email.trim() || !password.trim()) && styles.loginButtonDisabled
-          ]}
-          onPress={() => navigation.navigate('MainTabs')}
-          disabled={!email.trim() || !password.trim()}
-        >
-          <Text style={styles.emailButtonText}>Login</Text>
-        </TouchableOpacity>
-
-        {/* Divider */}
-        <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        {/* Social Login Buttons */}
-        <View style={styles.socialButtonsContainer}>
-          {/* Google Button */}
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => navigation.navigate('MainTabs')}
-          >
-            <View style={styles.socialIconContainer}>
-              <Text>G</Text>
-            </View>
-            <Text style={styles.socialButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
-
-          {/* Apple Button */}
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => navigation.navigate('MainTabs')}
-          >
-            <View style={styles.socialIconContainer}>
-              <Text>🍎</Text>
-            </View>
-            <Text style={styles.socialButtonText}>Continue with Apple</Text>
-          </TouchableOpacity>
-
-          {/* Guest Button */}
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => navigation.navigate('MainTabs')}
-          >
-            <View style={styles.socialIconContainer}>
-              <Text>👤</Text>
-            </View>
-            <Text style={styles.socialButtonText}>Continue as Guest</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Sign Up Link */}
-        <View style={styles.signUpContainer}>
-          <Text style={styles.signUpText}>
-            Don't have an account? <Text style={styles.signUpLink} onPress={() => navigation.navigate('Register')}>Sign Up</Text>
-          </Text>
-        </View>
-      </View>
-    </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -308,6 +434,16 @@ const styles = StyleSheet.create({
   signUpLink: {
     color: '#8a20ff',
     fontWeight: 'bold',
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  forgotPasswordContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  forgotPasswordText: {
+    color: '#8a20ff',
+    fontSize: 14,
     fontFamily: fonts.fontFamily.pixel,
   },
 });
