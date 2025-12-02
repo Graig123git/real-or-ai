@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  TextInput, 
+  ActivityIndicator, 
+  Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
@@ -16,15 +28,25 @@ const ConfirmSignUpScreen = () => {
   
   const [email, setEmail] = useState('');
   const [confirmationCode, setConfirmationCode] = useState('');
+  const codeInputRef = useRef<TextInput>(null);
   
   // Set initial email from route params if available
   useEffect(() => {
     if (route.params?.email) {
       setEmail(route.params.email);
+      // Focus the code input if email is pre-filled
+      setTimeout(() => {
+        if (codeInputRef.current) {
+          codeInputRef.current.focus();
+        }
+      }, 300);
     }
   }, [route.params]);
   
   const handleConfirmation = async () => {
+    // Dismiss keyboard
+    Keyboard.dismiss();
+    
     // Validate inputs
     if (!email.trim()) {
       Alert.alert('Error', 'Please enter your email');
@@ -57,6 +79,9 @@ const ConfirmSignUpScreen = () => {
   };
 
   const handleResendCode = async () => {
+    // Dismiss keyboard
+    Keyboard.dismiss();
+    
     // Validate email
     if (!email.trim()) {
       Alert.alert('Error', 'Please enter your email');
@@ -76,90 +101,104 @@ const ConfirmSignUpScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header with back button */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.navigate('Login')}
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Confirm Sign Up</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <View style={styles.content}>
-        {/* Title */}
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>Verify Your Account</Text>
-          <Text style={styles.subtitle}>Please enter the verification code sent to your email.</Text>
-        </View>
-
-        {/* Form Fields */}
-        <View style={styles.formContainer}>
-          {/* Email */}
-          <Text style={styles.inputLabel}>Email Address</Text>
-          <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>✉️</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="john.doe@example.com"
-              placeholderTextColor="#8E8E93"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              editable={!route.params?.email} // Make email non-editable if provided in route params
-            />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* Header with back button */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.navigate('Login')}
+            >
+              <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerText}>Confirm Sign Up</Text>
+            <View style={styles.headerSpacer} />
           </View>
 
-          {/* Confirmation Code */}
-          <Text style={styles.inputLabel}>Confirmation Code</Text>
-          <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>🔢</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="123456"
-              placeholderTextColor="#8E8E93"
-              value={confirmationCode}
-              onChangeText={setConfirmationCode}
-              keyboardType="number-pad"
-            />
+          <View style={styles.content}>
+            {/* Title */}
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Verify Your Account</Text>
+              <Text style={styles.subtitle}>Please enter the verification code sent to your email.</Text>
+            </View>
+
+            {/* Form Fields */}
+            <View style={styles.formContainer}>
+              {/* Email */}
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputIcon}>✉️</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="john.doe@example.com"
+                  placeholderTextColor="#8E8E93"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!route.params?.email} // Make email non-editable if provided in route params
+                  returnKeyType="next"
+                  onSubmitEditing={() => codeInputRef.current?.focus()}
+                  blurOnSubmit={false}
+                />
+              </View>
+
+              {/* Confirmation Code */}
+              <Text style={styles.inputLabel}>Confirmation Code</Text>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputIcon}>🔢</Text>
+                <TextInput
+                  ref={codeInputRef}
+                  style={styles.input}
+                  placeholder="123456"
+                  placeholderTextColor="#8E8E93"
+                  value={confirmationCode}
+                  onChangeText={setConfirmationCode}
+                  keyboardType="number-pad"
+                  returnKeyType="done"
+                  onSubmitEditing={handleConfirmation}
+                  blurOnSubmit={true}
+                />
+              </View>
+            </View>
+
+            {/* Resend Code Link */}
+            <TouchableOpacity 
+              style={styles.resendCodeContainer}
+              onPress={handleResendCode}
+              disabled={!email.trim() || isLoading}
+            >
+              <Text style={[
+                styles.resendCodeText, 
+                (!email.trim() || isLoading) && styles.resendCodeDisabled
+              ]}>
+                Didn't receive a code? Resend Code
+              </Text>
+            </TouchableOpacity>
+
+            {/* Confirm Button */}
+            <TouchableOpacity 
+              style={[
+                styles.confirmButton, 
+                (!email.trim() || !confirmationCode.trim() || isLoading) && styles.confirmButtonDisabled
+              ]}
+              onPress={handleConfirmation}
+              disabled={!email.trim() || !confirmationCode.trim() || isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text style={styles.confirmButtonText}>Confirm</Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
-
-        {/* Resend Code Link */}
-        <TouchableOpacity 
-          style={styles.resendCodeContainer}
-          onPress={handleResendCode}
-          disabled={!email.trim() || isLoading}
-        >
-          <Text style={[
-            styles.resendCodeText, 
-            (!email.trim() || isLoading) && styles.resendCodeDisabled
-          ]}>
-            Didn't receive a code? Resend Code
-          </Text>
-        </TouchableOpacity>
-
-        {/* Confirm Button */}
-        <TouchableOpacity 
-          style={[
-            styles.confirmButton, 
-            (!email.trim() || !confirmationCode.trim() || isLoading) && styles.confirmButtonDisabled
-          ]}
-          onPress={handleConfirmation}
-          disabled={!email.trim() || !confirmationCode.trim() || isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : (
-            <Text style={styles.confirmButtonText}>Confirm</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -245,6 +284,17 @@ const styles = StyleSheet.create({
     height: 45,
     color: 'white',
     fontSize: 14,
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  doneButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#333',
+    borderRadius: 12,
+  },
+  doneButtonText: {
+    color: 'white',
+    fontSize: 12,
     fontFamily: fonts.fontFamily.pixel,
   },
   confirmButton: {

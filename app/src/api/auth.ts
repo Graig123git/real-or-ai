@@ -21,24 +21,50 @@ const AUTH_ACCESS_TOKEN_KEY = 'auth_access_token';
  */
 export const initAuth = () => {
   try {
-    // For AWS Amplify v6, we configure auth through the Amplify.configure method
-    // Get the client ID from AWS CLI using:
-    // aws cognito-idp list-user-pool-clients --user-pool-id us-east-1_OaKtgCyZs
-    // Then update the userPoolClientId below with the correct value
-    Amplify.configure({
-      Auth: {
-        Cognito: {
-          userPoolId: 'us-east-1_OaKtgCyZs', // This ID is correct
-          userPoolClientId: 'h99sb77u05pnor7mhkj8tk6df', // This ID might be incorrect
-          identityPoolId: 'us-east-1:a70aaa26-174e-4e88-a307-80a5098c3e81',
-          loginWith: {
-            email: true,
-          },
-        }
-      }
-    });
+    // Get configuration from environment variables
+    const userPoolId = process.env.EXPO_PUBLIC_AWS_USER_POOL_ID;
+    const userPoolClientId = process.env.EXPO_PUBLIC_AWS_USER_POOL_CLIENT_ID;
+    const identityPoolId = process.env.EXPO_PUBLIC_AWS_IDENTITY_POOL_ID;
     
-    console.log('Auth initialized successfully with Cognito configuration');
+    // Check if all required environment variables are set
+    if (!userPoolId || !userPoolClientId || !identityPoolId) {
+      console.error('Missing AWS Cognito configuration. Please check your environment variables:');
+      if (!userPoolId) console.error('- EXPO_PUBLIC_AWS_USER_POOL_ID is missing');
+      if (!userPoolClientId) console.error('- EXPO_PUBLIC_AWS_USER_POOL_CLIENT_ID is missing');
+      if (!identityPoolId) console.error('- EXPO_PUBLIC_AWS_IDENTITY_POOL_ID is missing');
+      
+      // Fallback to hardcoded values for development only (not recommended for production)
+      console.warn('Falling back to hardcoded values for development. DO NOT USE IN PRODUCTION!');
+      
+      Amplify.configure({
+        Auth: {
+          Cognito: {
+            userPoolId: userPoolId || 'us-east-1_OaKtgCyZs',
+            userPoolClientId: userPoolClientId || 'h99sb77u05pnor7mhkj8tk6df',
+            identityPoolId: identityPoolId || 'us-east-1:a70aaa26-174e-4e88-a307-80a5098c3e81',
+            loginWith: {
+              email: true,
+            },
+          }
+        }
+      });
+    } else {
+      // Configure with environment variables
+      Amplify.configure({
+        Auth: {
+          Cognito: {
+            userPoolId,
+            userPoolClientId,
+            identityPoolId,
+            loginWith: {
+              email: true,
+            },
+          }
+        }
+      });
+      
+      console.log('Auth initialized successfully with Cognito configuration from environment variables');
+    }
   } catch (error) {
     console.error('Error initializing Auth:', error);
   }
@@ -72,7 +98,7 @@ export const signInWithEmail = async (email: string, password: string): Promise<
     
     return result;
   } catch (error: any) {
-    console.error('Error during sign in or session fetch:', error);
+    console.error('Error during sign in:', error);
     throw error;
   }
 };
@@ -82,9 +108,6 @@ export const signInWithEmail = async (email: string, password: string): Promise<
  */
 export const signUp = async (email: string, password: string, name: string): Promise<any> => {
   try {
-    console.log(`Attempting to sign up with email: ${email}`);
-    
-    // Add more detailed logging
     console.log('Sign-up parameters:', JSON.stringify({ username: email, password: '******', name }, null, 2));
     
     const result = await amplifySignUp({
@@ -93,7 +116,7 @@ export const signUp = async (email: string, password: string, name: string): Pro
       options: {
         userAttributes: {
           email,
-          given_name: name, // Changed from 'name' to 'given_name' to match Cognito schema
+          given_name: name,
         },
       },
     });
@@ -104,35 +127,6 @@ export const signUp = async (email: string, password: string, name: string): Pro
   } catch (error: any) {
     // More detailed error logging
     console.error('Error signing up:', error);
-    
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      
-      // Check for specific error types and provide more descriptive errors
-      if (error.message.includes('UsernameExistsException')) {
-        const descriptiveError = new Error(`User with email ${email} already exists`);
-        descriptiveError.name = 'UsernameExistsException';
-        throw descriptiveError;
-      } else if (error.message.includes('InvalidPasswordException')) {
-        const descriptiveError = new Error('Password does not meet the requirements. It must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters.');
-        descriptiveError.name = 'InvalidPasswordException';
-        throw descriptiveError;
-      } else if (error.message.includes('InvalidParameterException')) {
-        const descriptiveError = new Error('Invalid parameter. Please check your input.');
-        descriptiveError.name = 'InvalidParameterException';
-        throw descriptiveError;
-      } else if (error.message.includes('NetworkError')) {
-        const descriptiveError = new Error('Network error - check your internet connection');
-        descriptiveError.name = 'NetworkError';
-        throw descriptiveError;
-      }
-    } else {
-      console.error('Unknown error type:', typeof error);
-    }
-    
-    // If we get here, it's an unknown error
     throw error;
   }
 };

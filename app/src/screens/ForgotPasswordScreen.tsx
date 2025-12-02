@@ -1,5 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  TextInput, 
+  ActivityIndicator, 
+  Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
@@ -14,8 +26,14 @@ const ForgotPasswordScreen = () => {
   const { forgotPassword, isLoading } = useAuthStore();
   const [email, setEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  
+  // Ref for email input
+  const emailInputRef = useRef<TextInput>(null);
 
   const handleResetPassword = async () => {
+    // Dismiss keyboard
+    Keyboard.dismiss();
+    
     if (!email.trim()) {
       Alert.alert('Error', 'Please enter your email address');
       return;
@@ -35,73 +53,90 @@ const ForgotPasswordScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header with back button */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.navigate('Login')}
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Reset Password</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* Header with back button */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => {
+                Keyboard.dismiss();
+                navigation.navigate('Login');
+              }}
+            >
+              <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerText}>Reset Password</Text>
+            <View style={styles.headerSpacer} />
+          </View>
 
-      <View style={styles.content}>
-        {/* Title */}
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>Forgot Password?</Text>
-          <Text style={styles.subtitle}>
-            Enter your email address and we'll send you instructions to reset your password.
-          </Text>
-        </View>
+          <View style={styles.content}>
+            {/* Title */}
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Forgot Password?</Text>
+              <Text style={styles.subtitle}>
+                Enter your email address and we'll send you instructions to reset your password.
+              </Text>
+            </View>
 
-        {/* Email Input */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Email Address</Text>
-          <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>✉️</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              placeholderTextColor="#8E8E93"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              editable={!isLoading && !resetSent}
-            />
+            {/* Email Input */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputIcon}>✉️</Text>
+                <TextInput
+                  ref={emailInputRef}
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#8E8E93"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isLoading && !resetSent}
+                  returnKeyType="done"
+                  onSubmitEditing={handleResetPassword}
+                  blurOnSubmit={true}
+                />
+              </View>
+            </View>
+
+            {/* Reset Button */}
+            <TouchableOpacity 
+              style={[
+                styles.resetButton, 
+                (!email.trim() || isLoading || resetSent) && styles.resetButtonDisabled
+              ]}
+              onPress={handleResetPassword}
+              disabled={!email.trim() || isLoading || resetSent}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text style={styles.resetButtonText}>
+                  {resetSent ? 'Email Sent' : 'Send Reset Link'}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Back to Login */}
+            <TouchableOpacity 
+              style={styles.backToLoginContainer}
+              onPress={() => {
+                Keyboard.dismiss();
+                navigation.navigate('Login');
+              }}
+            >
+              <Text style={styles.backToLoginText}>Back to Login</Text>
+            </TouchableOpacity>
           </View>
         </View>
-
-        {/* Reset Button */}
-        <TouchableOpacity 
-          style={[
-            styles.resetButton, 
-            (!email.trim() || isLoading || resetSent) && styles.resetButtonDisabled
-          ]}
-          onPress={handleResetPassword}
-          disabled={!email.trim() || isLoading || resetSent}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : (
-            <Text style={styles.resetButtonText}>
-              {resetSent ? 'Email Sent' : 'Send Reset Link'}
-            </Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Back to Login */}
-        <TouchableOpacity 
-          style={styles.backToLoginContainer}
-          onPress={() => navigation.navigate('Login')}
-        >
-          <Text style={styles.backToLoginText}>Back to Login</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
