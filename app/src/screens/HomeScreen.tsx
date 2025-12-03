@@ -47,6 +47,7 @@ const HomeScreen = () => {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const categoryRotateAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
+  const highlightAnim = useRef(new Animated.Value(0)).current;
   
   // Create refs for FlipCard components
   const flipCardRefs = useRef<{[key: string]: React.RefObject<any>}>({
@@ -108,6 +109,16 @@ const HomeScreen = () => {
       useNativeDriver: false
     }).start();
     
+    // Highlight animation that cycles through cards
+    Animated.loop(
+      Animated.timing(highlightAnim, {
+        toValue: 5, // 4 category cards + 1 mixed mode card
+        duration: 8000, // 8 seconds to complete a full cycle
+        easing: Easing.linear,
+        useNativeDriver: true
+      })
+    ).start();
+    
     // Show the daily challenge popup after a delay
     const timer = setTimeout(() => {
       setShowDailyChallenge(true);
@@ -167,6 +178,41 @@ const HomeScreen = () => {
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg']
   });
+  
+  // Function to determine if a card should be highlighted based on the animation value
+  // Maps the animation value to the correct card index in the desired sequence:
+  // Mixed Mode (4) -> Audio (2) -> Images (0) -> Videos (1) -> Text (3) -> Mixed Mode (4)
+  const getHighlightOpacity = (cardIndex: number) => {
+    // Define the sequence of cards to highlight
+    const sequence = [4, 2, 0, 1, 3]; // Mixed Mode, Audio, Images, Videos, Text
+    
+    // Find the position of this card in the sequence
+    const sequencePosition = sequence.indexOf(cardIndex);
+    
+    // If this card isn't in the sequence, don't highlight it
+    if (sequencePosition === -1) return 0;
+    
+    // For the first card in the sequence (Mixed Mode), we need special handling
+    if (sequencePosition === 0) {
+      // Simple interpolation for the first card
+      return highlightAnim.interpolate({
+        inputRange: [0, 0.3, 4.7, 5],
+        outputRange: [1, 0, 0, 1],
+        extrapolate: 'clamp'
+      });
+    }
+    
+    // For all other cards, use a standard interpolation
+    return highlightAnim.interpolate({
+      inputRange: [
+        Math.max(0, sequencePosition - 0.3), // Ensure we don't go below 0
+        sequencePosition,
+        Math.min(5, sequencePosition + 0.3)  // Ensure we don't go above 5
+      ],
+      outputRange: [0, 1, 0],
+      extrapolate: 'clamp'
+    });
+  };
   
   // Use the ImageIcon component
   const renderImageIcon = () => (
@@ -315,62 +361,82 @@ const HomeScreen = () => {
         <View style={styles.homeContent}>
           {/* Grid of categories */}
           <View style={styles.categoryGrid}>
-            {categories.map((category) => (
-              <TouchableOpacity 
-                key={category.id}
-                style={styles.categoryCardContainer}
-                onPress={() => handleCategorySelect(category.id)}
-                activeOpacity={0.7}
-              >
-                {/* Use the FlipCard component with the correct props */}
-                <View style={styles.categoryCard}>
-                  <View style={[
-                    styles.iconContainer, 
-                    { 
-                      borderColor: category.color, 
-                      borderWidth: 1.5, 
-                      borderRadius: 12,
-                      shadowColor: category.color,
-                      shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: 0.8,
-                      shadowRadius: 5,
-                      elevation: 5
-                    }
-                  ]}>
-                    {category.renderIcon()}
+            {categories.map((category, index) => {
+              // Get the highlight opacity for this card
+              const highlightOpacity = getHighlightOpacity(index);
+              
+              return (
+                <TouchableOpacity 
+                  key={category.id}
+                  style={styles.categoryCardContainer}
+                  onPress={() => handleCategorySelect(category.id)}
+                  activeOpacity={0.7}
+                >
+                  {/* Animated border overlay */}
+                  <Animated.View 
+                    style={[
+                      styles.cardHighlight,
+                      {
+                        borderColor: '#9d4eff',
+                        opacity: highlightOpacity
+                      }
+                    ]}
+                  />
+                  
+                  {/* Card content */}
+                  <View style={styles.categoryCard}>
+                    <View style={[
+                      styles.iconContainer, 
+                      { 
+                        borderColor: category.color, 
+                        borderWidth: 1.5, 
+                        borderRadius: 12,
+                        shadowColor: category.color,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.8,
+                        shadowRadius: 5,
+                        elevation: 5
+                      }
+                    ]}>
+                      {category.renderIcon()}
+                    </View>
+                    <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
+                    <Text style={styles.categoryCaption}>{category.caption}</Text>
                   </View>
-                  <Text style={[styles.categoryTitle, { color: category.color }]}>{category.title}</Text>
-                  <Text style={styles.categoryCaption}>{category.caption}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              );
+            })}
           </View>
           
           {/* Mixed Mode button */}
-          <TouchableOpacity 
-            style={[
-              styles.mixedModeCard,
-              {
-                shadowColor: '#9d4eff',
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.5,
-                shadowRadius: 8,
-                elevation: 8
-              }
-            ]}
-            onPress={() => handleCategorySelect('mixed')}
-            activeOpacity={0.7}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={styles.mixedModeIconContainer}>
-                {renderMixedModeIcon()}
+          <View style={styles.mixedModeContainer}>
+            {/* Animated border overlay for Mixed Mode */}
+            <Animated.View 
+              style={[
+                styles.mixedModeHighlight,
+                {
+                  borderColor: '#9d4eff',
+                  opacity: getHighlightOpacity(4) // Index 4 for Mixed Mode (after the 4 category cards)
+                }
+              ]}
+            />
+            
+            <TouchableOpacity 
+              style={styles.mixedModeCard}
+              onPress={() => handleCategorySelect('mixed')}
+              activeOpacity={0.7}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.mixedModeIconContainer}>
+                  {renderMixedModeIcon()}
+                </View>
+                <View>
+                  <Text style={styles.mixedModeTitle}>Mixed Mode</Text>
+                  <Text style={styles.mixedModeCaption}>Ultimate challenge!</Text>
+                </View>
               </View>
-              <View>
-                <Text style={styles.mixedModeTitle}>Mixed Mode</Text>
-                <Text style={styles.mixedModeCaption}>Ultimate challenge!</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
         
         {/* No custom bottom navigation - using React Navigation's Tab Navigator */}
@@ -549,6 +615,23 @@ const styles = StyleSheet.create({
     width: '48%', // Slightly narrower to ensure proper spacing
     aspectRatio: 0.85, // Taller cards (not square)
     marginBottom: 12, // Reduced bottom margin
+    position: 'relative', // For absolute positioning of highlight
+  },
+  cardHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 3,
+    borderRadius: 16,
+    borderColor: '#9d4eff',
+    shadowColor: '#9d4eff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 8,
+    zIndex: 10,
   },
   categoryCard: {
     width: '100%',
@@ -587,6 +670,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: fonts.fontFamily.pixel,
   },
+  mixedModeContainer: {
+    width: '100%',
+    position: 'absolute',
+    bottom: 16, // Moved up from bottom of screen
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  mixedModeHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 2,
+    right: 2,
+    bottom: 0,
+    borderWidth: 3,
+    borderRadius: 16,
+    borderColor: '#9d4eff',
+    shadowColor: '#9d4eff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 8,
+    zIndex: 10,
+    width: '99%',
+    alignSelf: 'center',
+  },
   mixedModeCard: {
     width: '99%',
     aspectRatio: 3.5,
@@ -595,13 +704,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 12,
-    position: 'absolute',
-    bottom: 16, // Moved up from bottom of screen
-    left: 2,
-    right: 2,
-    alignSelf: 'center',
     borderWidth: 1.5,
-    borderColor: '#9d4eff',
+    borderColor: '#333333', // Changed from #9d4eff to match the category cards
   },
   mixedModeIconContainer: {
     width: 36,
