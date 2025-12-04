@@ -19,7 +19,7 @@ const AUTH_ACCESS_TOKEN_KEY = 'auth_access_token';
 /**
  * Initialize the Auth module with the Cognito configuration
  */
-export const initAuth = () => {
+export const initAuth = async() => {
   try {
     // Get configuration from environment variables
     const userPoolId = process.env.EXPO_PUBLIC_AWS_USER_POOL_ID;
@@ -46,6 +46,13 @@ export const initAuth = () => {
               email: true,
             },
           }
+        },
+        API: {
+          GraphQL: {
+            endpoint: 'https://rujuj33r5fgahiteug2s6yxg3e.appsync-api.us-east-1.amazonaws.com/graphql',
+            region: 'us-east-1',
+            defaultAuthMode: 'userPool',
+          }
         }
       });
     } else {
@@ -60,10 +67,17 @@ export const initAuth = () => {
               email: true,
             },
           }
+        },
+        API: {
+          GraphQL: {
+            endpoint: 'https://rujuj33r5fgahiteug2s6yxg3e.appsync-api.us-east-1.amazonaws.com/graphql',
+            region: 'us-east-1',
+            defaultAuthMode: 'userPool',
+          }
         }
       });
       
-      console.log('Auth initialized successfully with Cognito configuration from environment variables');
+      console.log('Auth and API initialized successfully with configuration from environment variables');
     }
   } catch (error) {
     console.error('Error initializing Auth:', error);

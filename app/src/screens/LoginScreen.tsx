@@ -17,6 +17,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import fonts from '../theme/fonts';
 import useAuthStore from '../state/authStore';
+import useUserProfileStore from '../state/userProfileStore';
 import LoadingOverlay from '../components/LoadingOverlay';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -24,6 +25,7 @@ type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'
 const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const { signInWithEmail, signInWithGoogle, signInWithApple, isLoading, error, initialize } = useAuthStore();
+  const { setTempProfile } = useUserProfileStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayText, setDisplayText] = useState('');
@@ -72,6 +74,11 @@ const LoginScreen = () => {
       
       // If no next step, the user is fully signed in
       console.log('Login successful, user is authenticated');
+      
+      // Set the user's email in the user profile store
+      setTempProfile({
+        email: email,
+      });
       
       // Reinitialize auth state to ensure it's updated correctly
       await initialize();

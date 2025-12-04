@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SvgXml } from 'react-native-svg';
 import { View, Text } from 'react-native';
 import { useAuth } from '../state/AuthContext';
+import fonts from '../theme/fonts';
 
 // Import screens
 import SplashScreen from '../screens/SplashScreen';
@@ -18,6 +19,15 @@ import ChallengeScreen from '../screens/ChallengeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GameplayScreen from '../screens/GameplayScreen';
 import ResultsScreen from '../screens/ResultsScreen';
+
+// Import onboarding screens
+import WelcomeScreen from '../screens/WelcomeScreen';
+import ProfileInfoScreen from '../screens/ProfileInfoScreen';
+import PreferencesScreen from '../screens/PreferencesScreen';
+import ConfirmationScreen from '../screens/ConfirmationScreen';
+
+// Import user profile store
+import useUserProfileStore from '../state/userProfileStore';
 
 // Tab bar icons
 const homeIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -74,6 +84,12 @@ export type RootStackParamList = {
   ForgotPassword: {
     email?: string;
   } | undefined;
+  // Onboarding screens
+  Welcome: undefined;
+  ProfileInfo: undefined;
+  Preferences: undefined;
+  Confirmation: undefined;
+  // Main app screens
   MainTabs: undefined;
   Gameplay: {
     category: string;
@@ -303,6 +319,7 @@ const TabNavigator = () => {
 
 // Create the stack navigators
 const AuthStack = createStackNavigator<RootStackParamList>();
+const OnboardingStack = createStackNavigator<RootStackParamList>();
 const AppStack = createStackNavigator<RootStackParamList>();
 
 // Auth Stack Navigator component
@@ -320,6 +337,24 @@ const AuthStackNavigator = () => {
       <AuthStack.Screen name="ConfirmSignUp" component={ConfirmSignUpScreen} />
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </AuthStack.Navigator>
+  );
+};
+
+// Onboarding Stack Navigator component
+const OnboardingStackNavigator = () => {
+  return (
+    <OnboardingStack.Navigator
+      initialRouteName="Welcome"
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: '#000000' }
+      }}
+    >
+      <OnboardingStack.Screen name="Welcome" component={WelcomeScreen} />
+      <OnboardingStack.Screen name="ProfileInfo" component={ProfileInfoScreen} />
+      <OnboardingStack.Screen name="Preferences" component={PreferencesScreen} />
+      <OnboardingStack.Screen name="Confirmation" component={ConfirmationScreen} />
+    </OnboardingStack.Navigator>
   );
 };
 
@@ -342,8 +377,10 @@ const AppStackNavigator = () => {
 
 // Main Navigation component
 const Navigation = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const { hasProfile, fetchProfile } = useUserProfileStore();
   const [initializing, setInitializing] = useState(true);
+  const [checkingProfile, setCheckingProfile] = useState(false);
   
   // Only show splash screen on initial app load
   useEffect(() => {
@@ -355,6 +392,25 @@ const Navigation = () => {
     return () => clearTimeout(timer);
   }, []);
   
+  // Check if user has a profile after authentication
+  useEffect(() => {
+    const checkUserProfile = async () => {
+      if (isAuthenticated && user) {
+        setCheckingProfile(true);
+        try {
+          // Fetch the user's profile
+          await fetchProfile(user.userId);
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        } finally {
+          setCheckingProfile(false);
+        }
+      }
+    };
+    
+    checkUserProfile();
+  }, [isAuthenticated, user, fetchProfile]);
+  
   // Show splash screen only during initial app load
   if (initializing) {
     return (
@@ -364,8 +420,23 @@ const Navigation = () => {
     );
   }
   
-  // Render the appropriate stack based on authentication state
-  return isAuthenticated ? <AppStackNavigator /> : <AuthStackNavigator />;
+  // Show loading screen while checking profile
+  if (isLoading || checkingProfile) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000' }}>
+        <Text style={{ color: 'white', marginBottom: 20, fontFamily: fonts.fontFamily.pixel }}>Loading...</Text>
+      </View>
+    );
+  }
+  
+  // Determine which navigator to show
+  if (!isAuthenticated) {
+    return <AuthStackNavigator />;
+  } else if (!hasProfile) {
+    return <OnboardingStackNavigator />;
+  } else {
+    return <AppStackNavigator />;
+  }
 };
 
 export default Navigation;

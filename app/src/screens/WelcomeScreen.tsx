@@ -1,83 +1,146 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  SafeAreaView,
+  StatusBar
+} from 'react-native';
+import { SvgXml } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
-import theme from '../theme';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation';
+import fonts from '../theme/fonts';
+
+type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
+
+// Brain SVG from assets
+const brainSvg = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M14.8699 1.62352C15.7603 1.60496 16.6466 1.76469 17.4743 2.09321C18.302 2.42173 19.0555 2.91253 19.6908 3.53652C20.326 4.1605 20.8299 4.90515 21.1732 5.72676C21.5159 6.547 21.6921 7.42767 21.6902 8.31656L21.6902 30.0281C21.6889 31.1694 21.4533 32.2985 20.9987 33.3454C20.5441 34.3922 19.8796 35.3346 19.0465 36.1146C18.2135 36.8945 17.2295 37.4961 16.155 37.8808C15.0805 38.2656 13.9377 38.4261 12.7987 38.3521C11.6599 38.2781 10.5478 37.9722 9.53211 37.4518C8.51652 36.9316 7.61868 36.2078 6.89338 35.3269C6.168 34.4456 5.63024 33.4246 5.31471 32.3277C5.09906 31.5779 4.99245 30.8032 4.9918 30.0266C4.19666 29.4306 3.51096 28.697 2.97117 27.8558C2.23638 26.711 1.7923 25.4034 1.6779 24.0479C1.56357 22.6925 1.7832 21.33 2.31556 20.0783C2.67748 19.2274 3.17875 18.4472 3.79312 17.7642C3.51874 16.9838 3.35886 16.1654 3.32506 15.3342C3.27365 14.0683 3.51178 12.8073 4.01981 11.6468C4.52789 10.4862 5.2924 9.4555 6.25734 8.63458C6.90296 8.08535 7.62786 7.64158 8.40356 7.31196C8.47119 6.86064 8.58542 6.41625 8.74441 5.98608C9.05312 5.15084 9.52523 4.38543 10.1339 3.73549C10.7427 3.08546 11.4765 2.56358 12.2899 2.20084C13.1029 1.8384 13.98 1.64217 14.8699 1.62352ZM14.94 4.96188C14.495 4.9712 14.0566 5.07088 13.65 5.25218C13.2433 5.43356 12.8764 5.69368 12.572 6.01869C12.2677 6.34366 12.0317 6.72636 11.8773 7.14397C11.723 7.56149 11.6536 8.00564 11.6734 8.4503C11.7087 9.23949 11.186 9.94637 10.4209 10.1431C9.68472 10.3324 9.0005 10.6862 8.4215 11.1787C7.84266 11.6712 7.38413 12.2895 7.0793 12.9857C6.77446 13.6821 6.63096 14.4392 6.6618 15.1988C6.69271 15.9581 6.89687 16.7004 7.25707 17.3695C7.63701 18.0753 7.46156 18.9514 6.83957 19.457C6.20609 19.9716 5.7076 20.6336 5.38811 21.3846C5.0686 22.1357 4.93784 22.954 5.00648 23.7673C5.07513 24.5806 5.34192 25.3652 5.78276 26.0522C6.22361 26.7389 6.82526 27.3081 7.53594 27.7092C8.12799 28.0434 8.45809 28.7032 8.37094 29.3775C8.2832 30.0565 8.33658 30.7466 8.52587 31.4046C8.71518 32.0625 9.03667 32.6749 9.47178 33.2035C9.90699 33.7322 10.4459 34.1666 11.0553 34.4789C11.6648 34.791 12.3323 34.9744 13.0156 35.0186C13.6987 35.0629 14.3836 34.9672 15.0281 34.7365C15.6728 34.5056 16.2635 34.1444 16.7634 33.6764C17.2632 33.2083 17.6632 32.6427 17.9359 32.0146C18.2083 31.3872 18.3492 30.7105 18.3502 30.0266L18.3502 8.31167L18.3339 7.97897C18.3017 7.64811 18.221 7.32306 18.0926 7.01515C17.9209 6.60428 17.6681 6.23123 17.3504 5.91921C17.0328 5.60716 16.6554 5.361 16.2415 5.19674C15.8278 5.03266 15.385 4.95262 14.94 4.96188Z" fill="white"/>
+<path d="M25.1284 1.62351C26.0187 1.64206 26.8968 1.83823 27.7101 2.20084C28.5234 2.56356 29.2572 3.08545 29.8661 3.73547C30.4748 4.3854 30.9469 5.15084 31.2555 5.98606C31.4145 6.41619 31.5272 6.86069 31.5948 7.31194C32.3709 7.64162 33.0967 8.08507 33.7426 8.63458C34.7076 9.45547 35.4721 10.4863 35.9801 11.6468C36.4881 12.8073 36.7263 14.0683 36.6748 15.3341C36.6411 16.1656 36.4798 16.9836 36.2052 17.7642C36.8199 18.4474 37.3224 19.2273 37.6843 20.0783C38.2167 21.33 38.4363 22.6925 38.3221 24.0479C38.2077 25.4034 37.7635 26.711 37.0289 27.8558C36.4886 28.6977 35.8024 29.4321 35.0065 30.0281C35.0057 30.8044 34.8991 31.5784 34.6837 32.3277C34.3681 33.4246 33.832 34.4456 33.1065 35.3269C32.3813 36.208 31.482 36.9316 30.4663 37.4518C29.4509 37.9718 28.3395 38.2781 27.2012 38.3521C26.0623 38.4261 24.9195 38.2656 23.8449 37.8808C22.7704 37.4961 21.7866 36.8945 20.9534 36.1146C20.1203 35.3346 19.456 34.3922 19.0012 33.3454C18.5466 32.2985 18.311 31.1694 18.3098 30.0281L18.3098 8.31656C18.3078 7.42765 18.4842 6.547 18.8267 5.72674C19.17 4.90519 19.6741 4.16047 20.3092 3.53651C20.9446 2.91253 21.6979 2.4217 22.5256 2.09319C23.3532 1.76474 24.2382 1.60503 25.1284 1.62351ZM25.06 4.96188C24.6151 4.9526 24.1722 5.03271 23.7585 5.19672C23.3447 5.36098 22.9671 5.60719 22.6495 5.91919C22.3319 6.23123 22.0792 6.60425 21.9075 7.01513C21.736 7.4258 21.6485 7.86665 21.6498 8.31167L21.6498 30.025L21.6563 30.281C21.6876 30.8778 21.8255 31.465 22.064 32.0146C22.3367 32.6424 22.7353 33.2085 23.235 33.6764C23.7348 34.1444 24.3257 34.5056 24.9703 34.7365C25.6149 34.9673 26.3009 35.063 26.9843 35.0186C27.6677 34.9742 28.3352 34.791 28.9446 34.4789C29.5539 34.1666 30.093 33.732 30.5282 33.2035C30.9633 32.6749 31.2847 32.0625 31.4741 31.4046C31.6633 30.7466 31.7168 30.0565 31.6291 29.3775C31.5419 28.7032 31.8719 28.0434 32.4641 27.7092C33.1747 27.3079 33.7764 26.7389 34.2173 26.0522C34.6581 25.3652 34.9248 24.5806 34.9935 23.7673C35.0621 22.954 34.9313 22.1357 34.6119 21.3846C34.2924 20.6336 33.7939 19.9716 33.1605 19.4569C32.5382 18.9514 32.3629 18.0753 32.743 17.3694C33.103 16.7004 33.3056 15.958 33.3365 15.1988C33.3674 14.4393 33.2254 13.6821 32.9207 12.9857C32.6159 12.2894 32.1558 11.6713 31.5768 11.1787C31.0705 10.7481 30.4845 10.4227 29.853 10.2214L29.579 10.1431C28.814 9.94638 28.2913 9.2395 28.3265 8.45028C28.3464 8.00563 28.2771 7.56147 28.1228 7.14397C27.9683 6.72637 27.7323 6.34364 27.4279 6.01868C27.1236 5.69368 26.7565 5.43354 26.3499 5.25216C25.9434 5.07087 25.505 4.97122 25.06 4.96188Z" fill="white"/>
+<path d="M19.9998 13.3199C20.8866 13.3199 21.6181 14.0132 21.6665 14.8986L21.7074 15.3292C21.8362 16.3276 22.2208 17.2793 22.8278 18.0886C23.4345 18.8974 24.2395 19.5332 25.1615 19.9363L25.5643 20.0945L25.7226 20.1598C26.4883 20.52 26.8721 21.4089 26.5853 22.2244C26.2982 23.0398 25.4425 23.4928 24.6201 23.2944L24.4554 23.2454L24.1373 23.1264C22.5568 22.5038 21.1782 21.4538 20.1563 20.0913C20.1029 20.0198 20.0511 19.9472 19.9998 19.8744C19.9484 19.9472 19.8968 20.0198 19.8432 20.0913C18.7534 21.5445 17.2579 22.6426 15.5443 23.2454C14.6744 23.5514 13.7206 23.0943 13.4144 22.2244C13.1084 21.3545 13.5654 20.4007 14.4353 20.0945C15.5256 19.711 16.4784 19.0131 17.1719 18.0886C17.8656 17.1638 18.2702 16.0529 18.333 14.8986L18.3494 14.7355C18.4728 13.9295 19.1682 13.3199 19.9998 13.3199Z" fill="white"/>
+<path d="M30.0597 6.87756C30.981 6.91579 31.6974 7.69324 31.6595 8.61443L31.6303 9.01725C31.5346 9.95295 31.2424 10.8599 30.7708 11.6772C30.3097 12.4759 29.288 12.7497 28.4892 12.2887C27.6904 11.8277 27.4167 10.806 27.8776 10.0072C28.1469 9.54051 28.2988 9.01573 28.3212 8.47742L28.3376 8.3062C28.458 7.46847 29.1959 6.84172 30.0597 6.87756Z" fill="white"/>
+<path d="M9.94241 6.87764C10.8065 6.84232 11.5449 7.46977 11.6646 8.30791L11.6793 8.47752L11.72 8.8787C11.7632 9.14336 11.8385 9.40171 11.9435 9.64847L12.1229 10.0089L12.2011 10.1606C12.5473 10.9328 12.2585 11.8571 11.5097 12.2888C10.7603 12.7205 9.81544 12.5064 9.32103 11.8192L9.22808 11.6756L9.03727 11.3201C8.67805 10.599 8.45176 9.81879 8.37025 9.01733L8.34253 8.61451L8.34415 8.44327C8.3952 7.59848 9.0786 6.91311 9.94241 6.87764Z" fill="white"/>
+<path d="M5.95687 16.0364C6.7632 15.5889 7.77936 15.8793 8.22704 16.6855C8.67453 17.4918 8.38415 18.508 7.57796 18.9555C7.31984 19.0988 7.07462 19.265 6.8457 19.4514L6.70707 19.5541C6.00018 20.0192 5.04153 19.8819 4.49562 19.2116C3.91353 18.4968 4.02093 17.4457 4.73537 16.8632L5.02728 16.6349C5.32328 16.4149 5.63418 16.2155 5.95687 16.0364Z" fill="white"/>
+<path d="M31.7726 16.6855C32.1923 15.9296 33.1118 15.6259 33.8893 15.9597L34.0426 16.0363L34.3608 16.2223C34.5704 16.351 34.7748 16.4881 34.9723 16.6349L35.2642 16.8632L35.3915 16.9774C35.9899 17.5754 36.0496 18.5414 35.5039 19.2117C34.958 19.8819 33.9994 20.0191 33.2925 19.554L33.1539 19.4513L32.7983 19.1871L32.4216 18.9555L32.2764 18.8658C31.5817 18.3824 31.3529 17.4415 31.7726 16.6855Z" fill="white"/>
+<path d="M5.25695 28.3221C5.68165 27.5691 6.60332 27.2721 7.3787 27.611L7.53201 27.6876L7.81903 27.8376C8.49678 28.1642 9.24117 28.3338 9.99623 28.3334C10.9183 28.3333 11.6658 29.0812 11.6662 30.0034C11.6666 30.9256 10.9199 31.6727 9.99786 31.6734C8.73935 31.6741 7.49884 31.3909 6.3692 30.8466L5.89137 30.5971L5.74621 30.5058C5.055 30.0174 4.83234 29.0751 5.25695 28.3221Z" fill="white"/>
+<path d="M32.6208 27.611C33.3962 27.272 34.3177 27.5691 34.7425 28.3221C35.1674 29.0751 34.9448 30.0177 34.2532 30.5058L34.1081 30.5972C32.8554 31.3036 31.4415 31.674 30.0033 31.6735C29.0809 31.6732 28.3329 30.9258 28.3333 30.0035C28.3338 29.0815 29.0812 28.3335 30.0033 28.3335C30.8665 28.334 31.7157 28.1117 32.4675 27.6877L32.6208 27.611Z" fill="white"/>
+</svg>`;
+
+// Brain Icon Component
+const BrainIcon = () => {
+  return (
+    <View style={styles.iconContainer}>
+      <SvgXml xml={brainSvg} width="100" height="100" />
+    </View>
+  );
+};
 
 const WelcomeScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<WelcomeScreenNavigationProp>();
+
+  const handleGetStarted = () => {
+    navigation.navigate('ProfileInfo');
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome Challenger!</Text>
-      <Text style={styles.subtitle}>Can you tell what's real?</Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
       
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={() => navigation.navigate('Login' as never)}
-      >
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
-      
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={() => console.log('Connect with Google')}>
-          <Text style={styles.footerText}>Connect with Google</Text>
-        </TouchableOpacity>
+      <View style={styles.content}>
+        <View style={styles.topSection}>
+          {/* Brain Icon */}
+          <BrainIcon />
+          
+          {/* Welcome Text */}
+          <View style={styles.welcomeTextContainer}>
+            <Text style={styles.welcomeTitle}>Welcome to the future of identity!</Text>
+            <Text style={styles.welcomeSubtitle}>Begin your journey into the unknown.</Text>
+          </View>
+        </View>
         
-        <TouchableOpacity onPress={() => console.log('Connect with Apple')}>
-          <Text style={styles.footerText}>Connect with Apple</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity onPress={() => navigation.navigate('Main' as never)}>
-          <Text style={styles.footerText}>Continue as Guest</Text>
-        </TouchableOpacity>
+        <View style={styles.bottomSection}>
+          {/* Get Started Button */}
+          <TouchableOpacity 
+            style={styles.getStartedButton}
+            onPress={handleGetStarted}
+          >
+            <Text style={styles.getStartedButtonText}>Get Started</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.dark[600],
+    backgroundColor: '#000000',
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
+    padding: 24,
+  },
+  // Layout containers for proper positioning
+  topSection: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: 60, // Reduced padding to move content up
+  },
+  bottomSection: {
+    width: '100%',
+    paddingBottom: 40, // Space from the bottom
+  },
+  // Brain Icon Styles
+  iconContainer: {
+    width: 100,
+    height: 100,
+    marginBottom: 40,
     justifyContent: 'center',
-    padding: theme.spacing[6],
-  },
-  title: {
-    fontSize: theme.typography.fontSize['3xl'],
-    fontWeight: 'bold',
-    color: theme.colors.neonPurple[500],
-    marginBottom: theme.spacing[2],
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: theme.typography.fontSize.lg,
-    color: 'white',
-    marginBottom: theme.spacing[8],
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: theme.colors.neonPurple[600],
-    paddingVertical: theme.spacing[4],
-    paddingHorizontal: theme.spacing[8],
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing[8],
-    ...theme.shadows.neonPurple,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  footer: {
-    marginTop: theme.spacing[8],
     alignItems: 'center',
   },
-  footerText: {
-    color: theme.colors.neonPurple[300],
-    fontSize: theme.typography.fontSize.base,
-    marginBottom: theme.spacing[4],
+  welcomeTextContainer: {
+    alignItems: 'center',
+    marginBottom: 64,
+  },
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 16,
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  welcomeSubtitle: {
+    fontSize: 18,
+    color: '#cccccc',
+    textAlign: 'center',
+    fontFamily: fonts.fontFamily.pixel,
+  },
+  getStartedButton: {
+    width: '100%',
+    height: 45,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#7a1cf7',
+    shadowColor: '#7a1cf7',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#9d4eff',
+  },
+  getStartedButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.fontFamily.pixel,
   },
 });
 
