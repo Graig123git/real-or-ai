@@ -183,12 +183,10 @@ const ProfileInfoScreen = () => {
         
         {/* User Details Section */}
         <View style={styles.userDetailsSection}>
-          <Text style={styles.sectionTitle}>Your Details</Text>
           
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Username</Text>
             <View style={styles.inputWrapper}>
-              <Text style={styles.inputIcon}>@</Text>
               <TextInput
                 style={[styles.input, { color: '#8E8E93' }]}
                 placeholder="Enter your username"
@@ -327,7 +325,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    color: 'white',
+    color: '#9d4eff',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 16,

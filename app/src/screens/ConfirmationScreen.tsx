@@ -66,15 +66,24 @@ const ConfirmationScreen = () => {
         <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Your Profile</Text>
           
-          <View style={styles.profileSection}>
+          <View style={styles.profileContainer}>
+            {/* Profile image with purple border */}
             <Image 
               source={{ uri: tempProfile.avatarUrl || 'https://randomuser.me/api/portraits/men/32.jpg' }} 
               style={styles.profileImage} 
             />
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{tempProfile.name || 'User'}</Text>
-              <Text style={styles.profileUsername}>@{tempProfile.username || 'username'}</Text>
-            </View>
+            
+            {/* Name displayed prominently */}
+            <Text style={styles.profileName}>{tempProfile.name || 'User'}</Text>
+            
+            {/* Country with flag badge - styled like the image */}
+            {tempProfile.country && (
+              <View style={styles.countryBadgeContainer}>
+                <View style={styles.countryBadge}>
+                  <Text style={styles.countryBadgeText}>{tempProfile.country}</Text>
+                </View>
+              </View>
+            )}
           </View>
         </View>
         
@@ -83,6 +92,7 @@ const ConfirmationScreen = () => {
           <Text style={styles.summaryTitle}>Your Preferences</Text>
           
           <View style={styles.preferencesSection}>
+            
             <View style={styles.preferenceItem}>
               <Text style={styles.preferenceLabel}>App Alerts</Text>
               <Text style={styles.preferenceValue}>
@@ -205,32 +215,36 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontFamily: fonts.fontFamily.pixel,
   },
-  profileSection: {
-    flexDirection: 'row',
+  profileContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
   },
   profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 16,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     borderWidth: 2,
     borderColor: '#9d4eff',
-  },
-  profileInfo: {
-    flex: 1,
+    marginBottom: 12,
+    shadowColor: '#9d4eff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
   },
   profileName: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 12,
     fontFamily: fonts.fontFamily.pixel,
+    textAlign: 'center',
   },
-  profileUsername: {
-    color: '#999',
-    fontSize: 14,
-    fontFamily: fonts.fontFamily.pixel,
+  countryBadgeContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 8,
   },
   preferencesSection: {
     
@@ -252,6 +266,30 @@ const styles = StyleSheet.create({
     color: '#9d4eff',
     fontSize: 14,
     fontFamily: fonts.fontFamily.pixel,
+  },
+  countryBadge: {
+    backgroundColor: '#2c2c2e',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#9d4eff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+    shadowColor: '#9d4eff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  countryBadgeText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: fonts.fontFamily.pixel,
+    textAlign: 'center',
   },
   termsSection: {
     marginBottom: 24,

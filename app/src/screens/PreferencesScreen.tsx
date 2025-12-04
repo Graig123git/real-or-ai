@@ -20,7 +20,7 @@ type PreferencesScreenNavigationProp = StackNavigationProp<RootStackParamList, '
 
 const PreferencesScreen = () => {
   const navigation = useNavigation<PreferencesScreenNavigationProp>();
-  const { profile, setTempProfile } = useUserProfileStore();
+  const { profile, tempProfile, setTempProfile } = useUserProfileStore();
   
   // Initialize state with current preferences from the store
   const [appAlerts, setAppAlerts] = useState(profile?.preferences.notifications.appAlerts ?? true);
@@ -70,14 +70,51 @@ const PreferencesScreen = () => {
     // Collect all preferences
     const updatedPreferences = collectPreferences();
     
-    // Store preferences in the user profile store's tempProfile
+    // Get the country from tempProfile
+    const userCountry = tempProfile?.country || '';
+    
+    // Find the flag emoji for the country
+    const countryWithFlag = countries.find(c => c.name === userCountry);
+    const flagEmoji = countryWithFlag?.flag || '🌎';
+    
+    // Store preferences and ensure country info is preserved in the tempProfile
+    // Format the country to include the flag emoji if needed
+    const countryWithFlagDisplay = userCountry ? `${flagEmoji} ${userCountry}` : '';
+    
     setTempProfile({
-      preferences: updatedPreferences
+      ...tempProfile, // Preserve existing profile data
+      country: countryWithFlagDisplay || userCountry, // Include country with flag for display
+      preferences: updatedPreferences // Update preferences
     });
     
     // Navigate to confirmation screen
     navigation.navigate('Confirmation');
   };
+  
+  // List of countries with flags (same as in ProfileInfoScreen)
+  const countries = [
+    { name: 'United States', flag: '🇺🇸' },
+    { name: 'Canada', flag: '🇨🇦' },
+    { name: 'United Kingdom', flag: '🇬🇧' },
+    { name: 'Australia', flag: '🇦🇺' },
+    { name: 'Germany', flag: '🇩🇪' },
+    { name: 'France', flag: '🇫🇷' },
+    { name: 'Japan', flag: '🇯🇵' },
+    { name: 'China', flag: '🇨🇳' },
+    { name: 'India', flag: '🇮🇳' },
+    { name: 'Brazil', flag: '🇧🇷' },
+    { name: 'Mexico', flag: '🇲🇽' },
+    { name: 'South Africa', flag: '🇿🇦' },
+    { name: 'Nigeria', flag: '🇳🇬' },
+    { name: 'Egypt', flag: '🇪🇬' },
+    { name: 'Russia', flag: '🇷🇺' },
+    { name: 'Italy', flag: '🇮🇹' },
+    { name: 'Spain', flag: '🇪🇸' },
+    { name: 'Netherlands', flag: '🇳🇱' },
+    { name: 'Sweden', flag: '🇸🇪' },
+    { name: 'Norway', flag: '🇳🇴' },
+    { name: 'Global', flag: '🌎' }
+  ];
 
   // Handle back button press
   const handleBack = () => {
@@ -101,10 +138,10 @@ const PreferencesScreen = () => {
         <View style={styles.content}>
           {/* Notifications Section */}
           <View style={styles.sectionCard}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>🔔</Text>
-              <Text style={styles.sectionTitle}>Notifications</Text>
-            </View>
+            <Text style={styles.sectionTitleCentered}>
+              <Text style={styles.sectionIcon}>🔔 </Text>
+              Notifications
+            </Text>
             
             {/* App Alerts Toggle */}
             <View style={styles.preferenceItem}>
